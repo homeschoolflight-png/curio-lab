@@ -1,0 +1,358 @@
+:root {
+  --bg: #101012;
+  --panel: #17171a;
+  --card: #1e1e21;
+  --border: #2c2c30;
+  --text: #f2f2f0;
+  --text-secondary: #a3a39c;
+  --accent: #f5b942;
+  --accent-text: #3a2a05;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.site-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 24px;
+  border-bottom: 0.5px solid var(--border);
+  cursor: pointer;
+}
+
+.logo-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.site-name {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+#app {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.loading-text {
+  color: var(--text-secondary);
+}
+
+h2 {
+  font-size: 22px;
+  margin: 12px 0 4px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0 0 20px;
+}
+
+.section-label {
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  margin: 0 0 10px;
+}
+
+/* Zone grid on home page */
+.zone-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.zone-tile {
+  background: var(--card);
+  border: 0.5px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  cursor: pointer;
+}
+
+.zone-tile.empty {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.zone-tile i {
+  font-size: 20px;
+  color: var(--accent);
+}
+
+.zone-tile.empty i {
+  color: var(--text-secondary);
+}
+
+.zone-tile .zone-title {
+  margin: 10px 0 4px;
+  font-weight: 500;
+  font-size: 15px;
+}
+
+.zone-tile .zone-desc {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+/* Filter pills */
+.filter-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.filter-row select {
+  font-size: 13px;
+  background: var(--card);
+  color: var(--text);
+  border: 0.5px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 12px;
+}
+
+/* Surprise me button */
+.btn-primary {
+  width: 100%;
+  padding: 13px;
+  font-size: 14px;
+  background: var(--accent);
+  color: var(--accent-text);
+  border: none;
+  border-radius: 10px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+/* Back link */
+.back-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 13px;
+  border: none;
+  background: none;
+  padding: 0;
+}
+
+/* Spark list on zone page */
+.spark-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.spark-card {
+  background: var(--card);
+  border: 0.5px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+}
+
+.spark-card .spark-title {
+  margin: 0 0 4px;
+  font-weight: 500;
+  font-size: 15px;
+}
+
+.spark-card .spark-vibe {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+/* Tags on spark detail */
+.tag-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.tag-pill {
+  font-size: 12px;
+  background: var(--card);
+  border: 0.5px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 10px;
+  color: #d4d4cf;
+}
+
+/* Spark detail sections */
+.detail-section {
+  border-top: 0.5px solid var(--border);
+  padding-top: 14px;
+  margin-bottom: 14px;
+}
+
+.detail-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--accent);
+  margin: 0 0 6px;
+}
+
+.detail-text {
+  font-size: 14px;
+  color: #d4d4cf;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.steps-list {
+  font-size: 14px;
+  color: #d4d4cf;
+  margin: 0;
+  padding-left: 18px;
+  line-height: 1.6;
+}
+
+/* Try a different way toggle */
+.alt-toggle {
+  width: 100%;
+  margin-bottom: 14px;
+  padding: 10px;
+  background: transparent;
+  border: 0.5px solid var(--border);
+  border-radius: 10px;
+  color: #d4d4cf;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.alt-panel {
+  display: none;
+  background: var(--card);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 14px;
+}
+
+.alt-panel.open {
+  display: block;
+}
+
+.alt-item {
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: 0.5px solid var(--border);
+}
+
+.alt-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.alt-item .alt-title {
+  font-size: 13px;
+  font-weight: 500;
+  margin: 0 0 4px;
+}
+
+.alt-item .alt-steps {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0 0 6px;
+}
+
+.alt-tag {
+  font-size: 11px;
+  background: var(--bg);
+  border-radius: 20px;
+  padding: 2px 8px;
+  color: var(--text-secondary);
+  margin-right: 4px;
+}
+
+/* Print button */
+.print-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 0.5px solid var(--border);
+  border-radius: 10px;
+  color: #d4d4cf;
+  font-size: 13px;
+  padding: 8px 14px;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
+
+.error-text {
+  color: #e58989;
+  font-size: 14px;
+}
+
+/* Print styles: strip dark theme, buttons, and nav for a clean printout */
+@media print {
+  body {
+    background: #fff;
+    color: #000;
+  }
+  .site-header,
+  .back-link,
+  .print-btn,
+  .filter-row,
+  .btn-primary,
+  .alt-toggle {
+    display: none !important;
+  }
+  .alt-panel {
+    display: block !important;
+    background: none;
+  }
+  .tag-pill,
+  .alt-tag {
+    border: 1px solid #999;
+    color: #000;
+  }
+  .detail-label {
+    color: #000;
+    text-transform: uppercase;
+  }
+  .detail-text,
+  .steps-list,
+  .alt-item .alt-title,
+  .alt-item .alt-steps {
+    color: #000;
+  }
+  .spark-card,
+  .zone-tile,
+  .alt-panel {
+    border: 1px solid #ccc;
+  }
+}
