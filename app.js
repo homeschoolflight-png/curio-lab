@@ -325,7 +325,7 @@ async function renderSpark(sparkId) {
     ${altHtml}
 
     <div class="detail-section">
-      <p class="detail-label">nerd out</p>
+      <p class="detail-label">thirsty for more?</p>
       <p class="detail-text">${spark.nerd_out}</p>
     </div>
   `;
