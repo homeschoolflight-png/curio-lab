@@ -11,12 +11,20 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 // clickable here instead of showing "coming soon" - no code change needed.
 const PLANNED_ZONES = [
   { id: "matter", name: "matter", icon: "flask", desc: "what stuff is made of" },
-  { id: "forces-motion", name: "forces and motion", icon: "arrows-move", desc: "coming soon" },
-  { id: "energy", name: "energy", icon: "bolt", desc: "coming soon" },
-  { id: "electricity-magnetism", name: "electricity and magnetism", icon: "magnet", desc: "coming soon" },
-  { id: "sound", name: "sound", icon: "wave-square", desc: "coming soon" },
-  { id: "light", name: "light", icon: "sun", desc: "coming soon" },
+  { id: "forces-motion", name: "forces and motion", icon: "arrows-move", desc: "why things push, pull, and stay put" },
+  { id: "energy", name: "energy", icon: "bolt", desc: "energy never disappears, it just changes costumes" },
+  { id: "electricity-magnetism", name: "electricity and magnetism", icon: "magnet", desc: "invisible forces you can actually feel" },
+  { id: "sound", name: "sound", icon: "wave-square", desc: "vibrations you can hear" },
+  { id: "light", name: "light", icon: "sun", desc: "how you actually see anything at all" },
 ];
+
+// Turns any full URL in a block of text into a clickable link that opens in a new tab
+function linkify(text) {
+  return text.replace(
+    /(https?:\/\/[^\s)]+)/g,
+    '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: var(--accent);">$1</a>'
+  );
+}
 
 const app = document.getElementById("app");
 
@@ -49,18 +57,20 @@ function route() {
 async function renderHome() {
   app.innerHTML = `<p class="loading-text">loading zones...</p>`;
 
-  const { data: zones, error } = await supabaseClient.from("zones").select("id");
+  const { data: zones, error } = await supabaseClient.from("zones").select("id, tagline");
 
   if (error) {
     app.innerHTML = `<p class="error-text">couldn't load zones: ${error.message}</p>`;
     return;
   }
 
-  const liveZoneIds = new Set((zones || []).map((z) => z.id));
+  const liveZonesById = {};
+  (zones || []).forEach((z) => { liveZonesById[z.id] = z; });
 
   const zoneTilesHtml = PLANNED_ZONES.map((zone) => {
-    const isLive = liveZoneIds.has(zone.id);
-    const desc = isLive ? zone.desc : "coming soon";
+    const liveZone = liveZonesById[zone.id];
+    const isLive = Boolean(liveZone);
+    const desc = isLive ? liveZone.tagline : zone.desc;
     return `
       <div class="zone-tile ${isLive ? "" : "empty"}" ${isLive ? `onclick="window.location.hash='#/zone/${zone.id}'"` : ""}>
         <i class="ti ti-${zone.icon}"></i>
@@ -206,6 +216,15 @@ async function renderZone(zoneId) {
     return;
   }
 
+  const starterKitHtml = zone.starter_kit
+    ? `
+    <div class="detail-section" style="border-top: none; padding-top: 0;">
+      <p class="detail-label">grab these first</p>
+      <p class="detail-text">${zone.starter_kit}</p>
+    </div>
+  `
+    : "";
+
   app.innerHTML = `
     <button class="back-link" onclick="window.location.hash='#/'">
       <i class="ti ti-arrow-left"></i> curio lab
@@ -214,6 +233,8 @@ async function renderZone(zoneId) {
     <i class="ti ti-${zone.icon}" style="font-size:24px; color: var(--accent);"></i>
     <h2>${zone.name}</h2>
     <p class="subtitle">${zone.tagline || ""}</p>
+
+    ${starterKitHtml}
 
     <div class="spark-list">
       ${(sparks || [])
@@ -268,6 +289,7 @@ async function renderSpark(sparkId) {
     ? `
     <div class="detail-section">
       <p class="detail-label">try this — ${defaultExp.title}</p>
+      ${defaultExp.supplies ? `<p class="detail-text" style="margin-bottom: 10px;"><strong>you'll need:</strong> ${defaultExp.supplies}</p>` : ""}
       <ol class="steps-list">
         ${defaultExp.steps
           .split(/\d\)\s*/)
@@ -292,6 +314,7 @@ async function renderSpark(sparkId) {
         <div class="alt-item">
           <p class="alt-title">${alt.title}</p>
           <p class="alt-steps">${alt.steps}</p>
+          ${alt.supplies ? `<p class="alt-steps" style="margin-top: -2px;"><strong>you'll need:</strong> ${alt.supplies}</p>` : ""}
           ${alt.time_tag ? `<span class="alt-tag">${alt.time_tag}</span>` : ""}
           ${alt.mess_tag ? `<span class="alt-tag">${alt.mess_tag}</span>` : ""}
         </div>
@@ -328,5 +351,16 @@ async function renderSpark(sparkId) {
       <p class="detail-label">thirsty for more?</p>
       <p class="detail-text">${spark.nerd_out}</p>
     </div>
+
+    ${
+      spark.rabbit_hole
+        ? `
+    <div class="detail-section">
+      <p class="detail-label">down the rabbit hole</p>
+      <p class="detail-text">${linkify(spark.rabbit_hole)}</p>
+    </div>
+    `
+        : ""
+    }
   `;
 }
