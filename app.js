@@ -16,6 +16,7 @@ const PLANNED_ZONES = [
   { id: "electricity-magnetism", name: "electricity and magnetism", icon: "magnet", desc: "invisible forces you can actually feel" },
   { id: "sound", name: "sound", icon: "wave-square", desc: "vibrations you can hear" },
   { id: "light", name: "light", icon: "sun", desc: "how you actually see anything at all" },
+  { id: "kitchen-skills", name: "kitchen skills", icon: "chef-hat", desc: "poke around the kitchen, figure out how it actually works" },
 ];
 
 // Turns any full URL in a block of text into a clickable link that opens in a new tab
