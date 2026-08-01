@@ -217,7 +217,7 @@ async function renderZone(zoneId) {
     return;
   }
 
-  const starterKitHtml = zone.starter_kit
+ const starterKitHtml = zone.starter_kit
     ? `
     <div class="detail-section" style="border-top: none; padding-top: 0;">
       <p class="detail-label">grab these first</p>
@@ -226,16 +226,21 @@ async function renderZone(zoneId) {
   `
     : "";
 
+  const supplyCardHtml = `
+    <a class="print-btn" href="/supplies/box-cards.html#zone-${zoneId}" target="_blank" rel="noopener noreferrer" style="text-decoration:none; margin-bottom:20px; display:inline-flex;">
+      <i class="ti ti-printer"></i> print supply card
+    </a>
+  `;
+
   app.innerHTML = `
     <button class="back-link" onclick="window.location.hash='#/'">
       <i class="ti ti-arrow-left"></i> curio lab
     </button>
-
     <i class="ti ti-${zone.icon}" style="font-size:24px; color: var(--accent);"></i>
     <h2>${zone.name}</h2>
     <p class="subtitle">${zone.tagline || ""}</p>
-
     ${starterKitHtml}
+    ${supplyCardHtml}
 
     <div class="spark-list">
       ${(sparks || [])
