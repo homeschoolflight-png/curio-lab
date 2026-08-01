@@ -125,6 +125,12 @@ async function renderHome() {
     <button class="btn-primary" id="surprise-btn">
       <i class="ti ti-arrows-shuffle"></i> surprise me
     </button>
+    
+    <p style="text-align:center; margin-top: 16px;">
+      <a href="/supplies/shopping-checklist.html" target="_blank" rel="noopener noreferrer" style="color: var(--text-secondary); font-size: 13px;">
+        <i class="ti ti-list-check"></i> combined shopping & household checklist
+      </a>
+    </p>
   `;
 
   document.getElementById("surprise-btn").addEventListener("click", surpriseMe);
