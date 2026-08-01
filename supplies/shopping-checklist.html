@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Curio Lab — Combined Shopping and Household Checklists</title>
+<style>
+  @page { size: letter; margin: 0.6in; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #101012;
+    background: #fff;
+  }
+  .page { page-break-after: always; }
+  .page:last-child { page-break-after: auto; }
+  h1 { font-size: 22px; margin: 0 0 2px; }
+  .sub { font-size: 13px; color: #555; margin: 0 0 18px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th {
+    text-align: left; font-size: 11px; text-transform: uppercase;
+    color: #555; border-bottom: 1.5px solid #999; padding: 4px 6px;
+  }
+  td { padding: 6px; border-bottom: 0.5px solid #ddd; vertical-align: top; }
+  td.check { width: 26px; }
+  td.zones { color: #777; font-size: 11px; width: 34%; }
+  .box {
+    display: inline-block; width: 13px; height: 13px;
+    border: 1.3px solid #333; border-radius: 2px;
+  }
+  .note { font-size: 11px; color: #777; margin-top: 1px; }
+  .flag {
+    font-size: 9.5px; font-weight: 700; color: #a34;
+    margin-left: 6px; text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <h1>Curio Lab — combined shopping list</h1>
+  <p class="sub">every "shop for" item across all 6 zones plus the Shared box, merged into one list with combined quantities</p>
+  <table>
+    <tr><th></th><th>Item</th><th>Needed for</th></tr>
+    
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">AA batteries<span class="flag">consumable</span><div class="note">buy an 8-pack to cover both zones</div></td>
+          <td class="zones">Electricity and Magnetism, Energy</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Balloons<span class="flag">consumable</span><div class="note">buy a large pack, 12+</div></td>
+          <td class="zones">Electricity and Magnetism, Matter (x3 sparks), Sound (x2 sparks)</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Straws<span class="flag">consumable</span><div class="note">one full pack</div></td>
+          <td class="zones">Light, Sound</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Tape<span class="flag">consumable</span><div class="note">one roll</div></td>
+          <td class="zones">Light, Sound</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Insulated wire<span class="flag">consumable</span><div class="note">one small spool, at least 6-7 feet total</div></td>
+          <td class="zones">Electricity and Magnetism, Energy</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Small bulbs or LEDs<div class="note">buy 3-4 to cover both zones</div></td>
+          <td class="zones">Electricity and Magnetism, Energy</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Iron nail</td>
+          <td class="zones">Electricity and Magnetism</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A small toy car</td>
+          <td class="zones">Forces and Motion</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Unbreakable plastic cup<div class="note">if you don't already have one</div></td>
+          <td class="zones">Forces and Motion</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Two small flat craft mirrors</td>
+          <td class="zones">Light</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A glow-in-the-dark object<div class="note">buy 2 if possible (star sticker, toy, or paint)</div></td>
+          <td class="zones">Light</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A small UV blacklight</td>
+          <td class="zones">Light</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Two pairs of polarized sunglasses</td>
+          <td class="zones">Light</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A glass prism<div class="note">or use a CD instead — no purchase needed</div></td>
+          <td class="zones">Light</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Vinegar<span class="flag">consumable</span><div class="note">consumable, buy a full bottle</div></td>
+          <td class="zones">Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Baking soda<span class="flag">consumable</span><div class="note">consumable, buy a full box</div></td>
+          <td class="zones">Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Hydrogen peroxide (3%)<div class="note">adult help required</div></td>
+          <td class="zones">Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Dish soap</td>
+          <td class="zones">Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A packet of dry yeast</td>
+          <td class="zones">Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Honey</td>
+          <td class="zones">Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Food coloring</td>
+          <td class="zones">Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Cooking oil</td>
+          <td class="zones">Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Rubbing alcohol</td>
+          <td class="zones">Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Sidewalk chalk</td>
+          <td class="zones">Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Rubber bands<div class="note">a few spares</div></td>
+          <td class="zones">Sound</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Paper cups<div class="note">2-3</div></td>
+          <td class="zones">Sound</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Scissors<div class="note">one-time, for Shared box</div></td>
+          <td class="zones">Shared box</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Bar magnets<div class="note">×2, one-time, for Shared box</div></td>
+          <td class="zones">Shared box</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A compass<div class="note">one-time, for Shared box</div></td>
+          <td class="zones">Shared box</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A small bag of marbles<div class="note">one-time, for Shared box</div></td>
+          <td class="zones">Shared box</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Two flashlights<div class="note">one-time, for Shared box</div></td>
+          <td class="zones">Shared box</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A small ball set<div class="note">bouncy ball, tennis ball, golf ball, ping pong ball — one-time, for Shared box</div></td>
+          <td class="zones">Shared box</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A ruler<div class="note">one-time, for Shared box</div></td>
+          <td class="zones">Shared box</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A spool of kitchen string<div class="note">one-time, for Shared box</div></td>
+          <td class="zones">Shared box</td>
+        </tr>
+  </table>
+</div>
+
+<div class="page">
+  <h1>Curio Lab — household checklist</h1>
+  <p class="sub">everything the "borrow from around the house" notes call for, combined — check these off to confirm you actually have them before assuming they're covered</p>
+  <table>
+    <tr><th></th><th>Item</th><th>Needed for</th></tr>
+    
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Coins, a small handful</td>
+          <td class="zones">Electricity and Magnetism, Energy, Forces and Motion, Light</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A metal spoon</td>
+          <td class="zones">Energy, Sound</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A wooden spoon</td>
+          <td class="zones">Energy</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A bowl</td>
+          <td class="zones">Energy, Matter, Sound, Light</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Warm water</td>
+          <td class="zones">Energy, Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Ice cubes</td>
+          <td class="zones">Energy, Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A metal tray</td>
+          <td class="zones">Energy</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A wooden cutting board</td>
+          <td class="zones">Energy</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A flat / smooth table</td>
+          <td class="zones">Energy, Forces and Motion</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A bicycle (optional)</td>
+          <td class="zones">Energy</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">One raw egg, one hard-boiled egg</td>
+          <td class="zones">Energy</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">An old battery-powered flashlight</td>
+          <td class="zones">Energy</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A fresh battery and an older battery</td>
+          <td class="zones">Energy</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A washer, or a small bundle of coins</td>
+          <td class="zones">Energy</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A hardcover book</td>
+          <td class="zones">Energy, Forces and Motion</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A rubber band</td>
+          <td class="zones">Energy</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Access to carpet, tile, concrete, or hardwood floor</td>
+          <td class="zones">Energy, Forces and Motion</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">An insulated cup or thermos</td>
+          <td class="zones">Energy</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A regular cup</td>
+          <td class="zones">Energy</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Aluminum foil</td>
+          <td class="zones">Energy</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Bubble wrap</td>
+          <td class="zones">Energy</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A small towel</td>
+          <td class="zones">Energy</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A plate</td>
+          <td class="zones">Energy, Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Three cups</td>
+          <td class="zones">Energy</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Household objects: cans, keys, jewelry</td>
+          <td class="zones">Forces and Motion</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A paperclip</td>
+          <td class="zones">Electricity and Magnetism, Forces and Motion</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Scrap paper</td>
+          <td class="zones">Electricity and Magnetism, Forces and Motion, Light</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A book to prop as a ramp</td>
+          <td class="zones">Forces and Motion</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A small figure or toy</td>
+          <td class="zones">Forces and Motion</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A wall or stack of books</td>
+          <td class="zones">Forces and Motion</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A smooth tablecloth or sheet of paper</td>
+          <td class="zones">Forces and Motion</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">An index card</td>
+          <td class="zones">Forces and Motion</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A drinking glass or cup</td>
+          <td class="zones">Forces and Motion, Sound, Light, Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A wooden block</td>
+          <td class="zones">Forces and Motion</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Socks</td>
+          <td class="zones">Electricity and Magnetism, Forces and Motion</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Two coffee filters</td>
+          <td class="zones">Forces and Motion</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">An empty plastic water bottle</td>
+          <td class="zones">Forces and Motion, Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A little sand or rice</td>
+          <td class="zones">Forces and Motion, Sound</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A shopping cart (at the store)</td>
+          <td class="zones">Forces and Motion</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A plastic spoon</td>
+          <td class="zones">Electricity and Magnetism</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A key</td>
+          <td class="zones">Electricity and Magnetism</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A pencil</td>
+          <td class="zones">Electricity and Magnetism, Light</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A carpeted room</td>
+          <td class="zones">Electricity and Magnetism</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A metal doorknob or faucet</td>
+          <td class="zones">Electricity and Magnetism</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A cup of tap water and salt</td>
+          <td class="zones">Electricity and Magnetism</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A battery-powered remote or toy</td>
+          <td class="zones">Electricity and Magnetism</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">An empty cereal box</td>
+          <td class="zones">Light</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Two parallel mirrors already in the house (bathroom)</td>
+          <td class="zones">Light</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A dark room</td>
+          <td class="zones">Light</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A lamp, ideally with the shade removable</td>
+          <td class="zones">Light</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Modeling clay</td>
+          <td class="zones">Light</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Outdoor space</td>
+          <td class="zones">Light</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A yellow highlighter</td>
+          <td class="zones">Light</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A parked car on a sunny day</td>
+          <td class="zones">Light</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A smartphone or computer screen</td>
+          <td class="zones">Light</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Milk</td>
+          <td class="zones">Light</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A CD (optional, in place of a prism)</td>
+          <td class="zones">Light</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A phone or camera</td>
+          <td class="zones">Light</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A small jar with a lid</td>
+          <td class="zones">Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Olive oil</td>
+          <td class="zones">Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Salt</td>
+          <td class="zones">Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Sugar</td>
+          <td class="zones">Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Half a red cabbage</td>
+          <td class="zones">Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A stove</td>
+          <td class="zones">Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A strainer</td>
+          <td class="zones">Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">2-3 clear cups</td>
+          <td class="zones">Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">An empty bottle (glass or plastic)</td>
+          <td class="zones">Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A baking tray</td>
+          <td class="zones">Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Two steel nails</td>
+          <td class="zones">Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Two extra cups</td>
+          <td class="zones">Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A chocolate bar</td>
+          <td class="zones">Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A microwave-safe bowl</td>
+          <td class="zones">Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A funnel</td>
+          <td class="zones">Matter, Sound</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A kitchen or bathroom faucet</td>
+          <td class="zones">Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A metal pot</td>
+          <td class="zones">Matter, Sound</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A second pot</td>
+          <td class="zones">Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Oven mitts</td>
+          <td class="zones">Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A tall clear glass or jar</td>
+          <td class="zones">Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">One can regular soda, one can diet soda</td>
+          <td class="zones">Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A bucket of water</td>
+          <td class="zones">Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">An orange</td>
+          <td class="zones">Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">A tall glass</td>
+          <td class="zones">Matter</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">Plastic wrap</td>
+          <td class="zones">Sound</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">An empty glass bottle (save one from recycling)</td>
+          <td class="zones">Sound</td>
+        </tr>
+        <tr>
+          <td class="check"><span class="box"></span></td>
+          <td class="item">An empty paper towel tube (save one)</td>
+          <td class="zones">Sound</td>
+        </tr>
+  </table>
+</div>
+
+</body>
+</html>
