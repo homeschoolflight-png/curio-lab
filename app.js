@@ -17,6 +17,8 @@ const PLANNED_ZONES = [
   { id: "sound", name: "sound", icon: "wave-square", desc: "vibrations you can hear" },
   { id: "light", name: "light", icon: "sun", desc: "how you actually see anything at all" },
   { id: "kitchen-skills", name: "kitchen skills", icon: "chef-hat", desc: "poke around the kitchen, figure out how it actually works" },
+  { id: "creating", name: "creating things", icon: "palette", desc: "make something with your hands" },
+  { id: "hack-zone", name: "the hack zone", icon: "brain", desc: "test what actually calms you down" },
 ];
 
 // Turns any full URL in a block of text into a clickable link that opens in a new tab
@@ -125,12 +127,6 @@ async function renderHome() {
     <button class="btn-primary" id="surprise-btn">
       <i class="ti ti-arrows-shuffle"></i> surprise me
     </button>
-    
-    <p style="text-align:center; margin-top: 16px;">
-      <a href="/supplies/shopping-checklist.html" target="_blank" rel="noopener noreferrer" style="color: var(--text-secondary); font-size: 13px;">
-        <i class="ti ti-list-check"></i> combined shopping & household checklist
-      </a>
-    </p>
   `;
 
   document.getElementById("surprise-btn").addEventListener("click", surpriseMe);
@@ -223,7 +219,7 @@ async function renderZone(zoneId) {
     return;
   }
 
- const starterKitHtml = zone.starter_kit
+  const starterKitHtml = zone.starter_kit
     ? `
     <div class="detail-section" style="border-top: none; padding-top: 0;">
       <p class="detail-label">grab these first</p>
@@ -232,21 +228,16 @@ async function renderZone(zoneId) {
   `
     : "";
 
-  const supplyCardHtml = `
-    <a class="print-btn" href="/supplies/box-cards.html#zone-${zoneId}" target="_blank" rel="noopener noreferrer" style="text-decoration:none; margin-bottom:20px; display:inline-flex;">
-      <i class="ti ti-printer"></i> print supply card
-    </a>
-  `;
-
   app.innerHTML = `
     <button class="back-link" onclick="window.location.hash='#/'">
       <i class="ti ti-arrow-left"></i> curio lab
     </button>
+
     <i class="ti ti-${zone.icon}" style="font-size:24px; color: var(--accent);"></i>
     <h2>${zone.name}</h2>
     <p class="subtitle">${zone.tagline || ""}</p>
+
     ${starterKitHtml}
-    ${supplyCardHtml}
 
     <div class="spark-list">
       ${(sparks || [])
