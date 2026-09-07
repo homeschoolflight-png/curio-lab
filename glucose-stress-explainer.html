@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Sugar Rollercoaster: Glucose &amp; Stress</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#0F1417;
+    --panel:#161D22;
+    --panel-line:#26323A;
+    --text-primary:#E8EDF0;
+    --text-muted:#8FA0A8;
+    --calm:#2DD4BF;
+    --stress:#FB923C;
+    --cortisol:#60A5FA;
+    --cortisol-dim:#1E3A5F;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg-deep);
+    color:var(--text-primary);
+    font-family:'IBM Plex Sans',sans-serif;
+    line-height:1.55;
+    padding:28px 16px 60px;
+  }
+  .wrap{max-width:760px;margin:0 auto;}
+
+  .console-header{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    border-bottom:1px solid var(--panel-line);
+    padding-bottom:14px;
+    margin-bottom:6px;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .console-header h1{font-size:1.5rem;margin:0;font-weight:700;letter-spacing:-0.01em;}
+  .console-header .tag{font-family:'IBM Plex Mono',monospace;font-size:0.72rem;color:var(--text-muted);}
+
+  .intro{color:var(--text-muted);font-size:0.98rem;max-width:64ch;margin:14px 0 28px;}
+  .intro strong{color:var(--text-primary);font-weight:600;}
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    border-radius:10px;
+    padding:22px;
+    margin-bottom:22px;
+  }
+  .panel h2{
+    font-size:0.78rem;
+    font-family:'IBM Plex Mono',monospace;
+    color:var(--text-muted);
+    margin:0 0 16px;
+    font-weight:500;
+    letter-spacing:0.02em;
+  }
+
+  /* readouts */
+  .readouts{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+    gap:12px;
+    margin-bottom:18px;
+  }
+  .readout{
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    border-radius:8px;
+    padding:12px 14px;
+  }
+  .readout .label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.65rem;
+    color:var(--text-muted);
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+  }
+  .readout .value{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:1.3rem;
+    font-weight:600;
+    margin-top:4px;
+    color:var(--text-primary);
+    transition:color 0.3s ease;
+  }
+  .readout .value.hot{color:var(--stress);}
+  .readout .value.cool{color:var(--calm);}
+  .readout .value.cort{color:var(--cortisol);}
+
+  /* graph */
+  .graph-box{
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    border-radius:8px;
+    padding:10px;
+    margin-bottom:6px;
+  }
+  canvas{width:100%;height:auto;display:block;}
+  .graph-caption{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.65rem;
+    color:var(--text-muted);
+    margin-top:6px;
+  }
+
+  /* meal selector */
+  .seg-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+  .seg-btn{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.78rem;
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    color:var(--text-muted);
+    padding:10px 14px;
+    border-radius:6px;
+    cursor:pointer;
+    transition:border-color 0.2s ease,color 0.2s ease;
+  }
+  .seg-btn.active{
+    border-color:var(--calm);
+    color:var(--text-primary);
+  }
+  .seg-btn[data-meal="sugar"].active{border-color:var(--stress);}
+
+  .ctrl-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  button.action{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.78rem;
+    background:transparent;
+    border:1px solid var(--panel-line);
+    color:var(--text-primary);
+    padding:9px 16px;
+    border-radius:6px;
+    cursor:pointer;
+    transition:border-color 0.2s ease, opacity 0.2s ease;
+  }
+  button.action:hover:not(:disabled){border-color:var(--calm);}
+  button.action:disabled{opacity:0.35;cursor:default;}
+  button.spike{border-color:var(--cortisol-dim);}
+  button.spike:hover:not(:disabled){border-color:var(--cortisol);}
+
+  /* diagram */
+  .diagram-row{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;}
+  .diagram-box{
+    flex:0 0 200px;
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    border-radius:8px;
+    padding:10px;
+  }
+  .diagram-box svg{width:100%;height:auto;display:block;}
+  .cort-path{
+    fill:none;
+    stroke:var(--cortisol-dim);
+    stroke-width:3;
+    stroke-linecap:round;
+    transition:stroke 0.4s ease;
+  }
+  .stage.cortisol-active .cort-path{stroke:var(--cortisol);}
+  .stage.cortisol-active .pulse-dot{opacity:1;animation:travel 1.8s linear infinite;}
+  .pulse-dot{r:4;fill:var(--cortisol);opacity:0;offset-path:path('M60,20 L60,60 Q60,80 100,90 Q150,100 150,140 L150,175');}
+  @keyframes travel{
+    0%{offset-distance:0%;opacity:0;}
+    8%{opacity:1;}
+    92%{opacity:1;}
+    100%{offset-distance:100%;opacity:0;}
+  }
+  .diagram-notes{flex:1 1 220px;min-width:220px;}
+  .diagram-notes ul{margin:0;padding-left:18px;}
+  .diagram-notes li{margin-bottom:8px;font-size:0.92rem;}
+  .diagram-notes li span{
+    display:block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.68rem;
+    color:var(--text-muted);
+    margin-top:2px;
+  }
+
+  .explain p{margin:0 0 12px;font-size:0.96rem;}
+  .explain p:last-child{margin-bottom:0;}
+
+  footer{
+    margin-top:8px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.68rem;
+    color:var(--text-muted);
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+<div class="wrap stage" id="stage">
+
+  <div class="console-header">
+    <h1>The Sugar Rollercoaster</h1>
+    <span class="tag">glucose &amp; stress // hack zone experiment 02</span>
+  </div>
+
+  <p class="intro">
+    Blood sugar doesn't just move when you eat. Your <strong>stress hormone (cortisol)</strong> can push it up
+    too — your liver dumps stored sugar into your blood as fuel for "fight or flight," food or no food.
+    Run the simulation below and watch both effects happen live.
+  </p>
+
+  <div class="panel explain">
+    <h2>01 — THE BASICS: WHAT THESE TWO ARE FOR</h2>
+    <p><strong>Glucose</strong> is sugar in your blood — it's the main fuel your brain and muscles run on. You need a steady stream of it to think clearly, move, and just function. It's not something to avoid; it's what keeps the lights on.</p>
+    <p><strong>Cortisol</strong> is your main stress hormone. Its job is to get you ready for a challenge fast — sharpen focus, raise energy, free up fuel. A short burst of cortisol before a test or a race is helpful; it's your body doing exactly what it's supposed to do.</p>
+    <p>The problems in this experiment aren't about glucose or cortisol being "bad." They're about what happens when glucose swings too hard (spike-then-crash) or cortisol stays switched on longer than the situation actually needs.</p>
+  </div>
+
+  <div class="panel">
+    <h2>02 — LIVE GLUCOSE MONITOR</h2>
+    <div class="seg-row">
+      <button class="seg-btn active" data-meal="protein">Protein + fiber breakfast</button>
+      <button class="seg-btn" data-meal="sugar">Sugary cereal breakfast</button>
+    </div>
+    <div class="ctrl-row" style="margin-bottom:18px;">
+      <button class="action" id="startBtn">Start simulation</button>
+      <button class="action spike" id="spikeBtn" disabled>Add a stress event</button>
+      <button class="action" id="resetBtn">Reset</button>
+    </div>
+    <div class="readouts">
+      <div class="readout"><div class="label">Blood glucose</div><div class="value" id="glucVal">90 mg/dL</div></div>
+      <div class="readout"><div class="label">Trend</div><div class="value" id="trendVal">Steady</div></div>
+      <div class="readout"><div class="label">Energy</div><div class="value" id="energyVal">Steady</div></div>
+      <div class="readout"><div class="label">Cortisol</div><div class="value" id="cortVal">Baseline</div></div>
+    </div>
+    <div class="graph-box">
+      <canvas id="graph" width="800" height="280"></canvas>
+    </div>
+    <div class="graph-caption">Simulated 4-hour blood glucose trace after breakfast. Pick a meal, hit start, then try adding a stress event partway through.</div>
+  </div>
+
+  <div class="panel">
+    <h2>03 — WHERE THE STRESS SUGAR COMES FROM</h2>
+    <div class="diagram-row">
+      <div class="diagram-box">
+        <svg viewBox="0 0 200 200">
+          <!-- kidney + adrenal -->
+          <ellipse cx="60" cy="30" rx="14" ry="18" fill="none" stroke="#3A4750" stroke-width="2"/>
+          <circle cx="60" cy="14" r="7" fill="none" stroke="#3A4750" stroke-width="2"/>
+          <!-- liver -->
+          <path d="M90,85 Q120,75 140,90 Q150,105 130,115 Q100,120 90,105 Z" fill="none" stroke="#3A4750" stroke-width="2"/>
+          <!-- muscle/brain target -->
+          <circle cx="150" cy="175" r="10" fill="none" stroke="#3A4750" stroke-width="2"/>
+          <path class="cort-path" d="M60,20 L60,60 Q60,80 100,90 Q150,100 150,140 L150,175"/>
+          <circle class="pulse-dot" cx="0" cy="0"/>
+        </svg>
+      </div>
+      <div class="diagram-notes">
+        <ul>
+          <li>Adrenal gland <span>releases cortisol under stress</span></li>
+          <li>Liver <span>told to release stored sugar (glycogen)</span></li>
+          <li>Muscles / brain <span>get a quick-access fuel boost</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel explain">
+    <h2>04 — THE SHORT VERSION</h2>
+    <p>A sugary, low-fiber breakfast gets absorbed fast — blood glucose spikes high, your body over-releases insulin to bring it back down, and it often overshoots into a crash. That crash is why you can feel foggy or irritable an hour or two after a sugary meal.</p>
+    <p>Protein and fiber slow down digestion, so glucose rises gently and stays level for longer — no spike, no crash.</p>
+    <p>Stress runs on a separate track: cortisol tells your liver to release stored glucose regardless of what (or whether) you've eaten. That's why a stressful morning can make you feel "wired" even on an empty stomach — and why stacking stress on top of a sugar crash hits harder than either one alone.</p>
+  </div>
+
+  <footer>Simulated data for teaching purposes — not medical advice.</footer>
+</div>
+
+<script>
+(function(){
+  const stage = document.getElementById('stage');
+  const canvas = document.getElementById('graph');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const padL = 46, padR = 14, padT = 14, padB = 26;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const MIN_MINUTES = 0, MAX_MINUTES = 240;
+  const yMin = 50, yMax = 200;
+
+  const glucVal = document.getElementById('glucVal');
+  const trendVal = document.getElementById('trendVal');
+  const energyVal = document.getElementById('energyVal');
+  const cortVal = document.getElementById('cortVal');
+  const startBtn = document.getElementById('startBtn');
+  const spikeBtn = document.getElementById('spikeBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const segBtns = document.querySelectorAll('.seg-btn');
+
+  let meal = 'protein';
+  let running = false;
+  let startTime = null;
+  let currentMinute = 0;
+  let spikeTime = null;
+  let rafId = null;
+
+  function gaussian(t, mu, sigma){
+    return Math.exp(-0.5 * Math.pow((t - mu) / sigma, 2));
+  }
+
+  function baseCurve(t){
+    const baseline = 90;
+    if(meal === 'sugar'){
+      const spike = 90 * gaussian(t, 30, 18);
+      const dip = 27 * gaussian(t, 100, 30);
+      return baseline + spike - dip;
+    } else {
+      const bump = 30 * gaussian(t, 65, 45);
+      return baseline + bump;
+    }
+  }
+
+  function stressBump(t){
+    if(spikeTime === null) return 0;
+    if(t < spikeTime) return 0;
+    return 35 * gaussian(t, spikeTime + 20, 22);
+  }
+
+  function valueAt(t){
+    let v = baseCurve(t) + stressBump(t);
+    return Math.max(50, Math.min(200, v));
+  }
+
+  function xForMinute(m){ return padL + (m / MAX_MINUTES) * plotW; }
+  function yForValue(v){ return padT + plotH - ((v - yMin) / (yMax - yMin)) * plotH; }
+
+  function drawGrid(){
+    ctx.clearRect(0,0,W,H);
+    ctx.strokeStyle = '#1E2830';
+    ctx.lineWidth = 1;
+    ctx.font = '11px IBM Plex Mono, monospace';
+    ctx.fillStyle = '#63737B';
+
+    [70,90,120,150,180].forEach(v => {
+      const y = yForValue(v);
+      ctx.beginPath();
+      ctx.moveTo(padL, y);
+      ctx.lineTo(W - padR, y);
+      ctx.stroke();
+      ctx.fillText(v, 6, y + 4);
+    });
+
+    for(let h=0; h<=4; h++){
+      const x = xForMinute(h*60);
+      ctx.beginPath();
+      ctx.moveTo(x, padT);
+      ctx.lineTo(x, H - padB);
+      ctx.strokeStyle = '#171F26';
+      ctx.stroke();
+      ctx.fillStyle = '#63737B';
+      ctx.fillText('+' + h + 'h', x - 8, H - 8);
+    }
+
+    if(spikeTime !== null){
+      const x = xForMinute(spikeTime);
+      ctx.strokeStyle = 'rgba(96,165,250,0.5)';
+      ctx.setLineDash([4,3]);
+      ctx.beginPath();
+      ctx.moveTo(x, padT);
+      ctx.lineTo(x, H - padB);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  }
+
+  function drawCurve(uptoMinute){
+    const lineColor = meal === 'sugar' ? '#FB923C' : '#2DD4BF';
+    const fillColor = meal === 'sugar' ? 'rgba(251,146,60,0.12)' : 'rgba(45,212,191,0.12)';
+    const step = 2;
+    let pts = [];
+    for(let m=0; m<=uptoMinute; m+=step){
+      pts.push([xForMinute(m), yForValue(valueAt(m))]);
+    }
+    if(pts.length < 2) return;
+
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i][0], pts[i][1]);
+    ctx.strokeStyle = lineColor;
+    ctx.lineWidth = 2.4;
+    ctx.stroke();
+
+    ctx.lineTo(pts[pts.length-1][0], H - padB);
+    ctx.lineTo(pts[0][0], H - padB);
+    ctx.closePath();
+    ctx.fillStyle = fillColor;
+    ctx.fill();
+
+    const last = pts[pts.length-1];
+    ctx.beginPath();
+    ctx.arc(last[0], last[1], 4.5, 0, Math.PI*2);
+    ctx.fillStyle = lineColor;
+    ctx.fill();
+  }
+
+  function updateReadouts(t){
+    const v = valueAt(t);
+    const prev = valueAt(Math.max(0, t-5));
+    const delta = v - prev;
+
+    glucVal.textContent = Math.round(v) + ' mg/dL';
+    glucVal.className = 'value' + (v > 150 ? ' hot' : (v < 75 ? ' cort' : ''));
+
+    let trend = 'Steady';
+    if(delta > 1.2) trend = 'Rising';
+    else if(delta < -1.2) trend = 'Falling';
+    trendVal.textContent = trend;
+
+    let energy = 'Steady';
+    let energyClass = '';
+    if(v > 150){ energy = 'Wired / jittery'; energyClass='hot'; }
+    else if(v < 75){ energy = 'Crashing'; energyClass='cort'; }
+    energyVal.textContent = energy;
+    energyVal.className = 'value ' + energyClass;
+
+    const inSpikeWindow = spikeTime !== null && t >= spikeTime && t <= spikeTime + 70;
+    cortVal.textContent = inSpikeWindow ? 'Elevated' : 'Baseline';
+    cortVal.className = 'value' + (inSpikeWindow ? ' cort' : '');
+    stage.classList.toggle('cortisol-active', inSpikeWindow);
+  }
+
+  function render(t){
+    drawGrid();
+    drawCurve(t);
+    updateReadouts(t);
+  }
+
+  function tick(ts){
+    if(!running) return;
+    if(startTime === null) startTime = ts;
+    const elapsed = ts - startTime;
+    currentMinute = Math.min(MAX_MINUTES, (elapsed/1000) * 12); // 12 sim-minutes per real second
+    render(currentMinute);
+    if(currentMinute >= MAX_MINUTES){
+      running = false;
+      startBtn.disabled = false;
+      spikeBtn.disabled = true;
+      return;
+    }
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function resetSim(){
+    running = false;
+    if(rafId) cancelAnimationFrame(rafId);
+    startTime = null;
+    currentMinute = 0;
+    spikeTime = null;
+    startBtn.disabled = false;
+    spikeBtn.disabled = true;
+    render(0);
+  }
+
+  segBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      segBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      meal = btn.dataset.meal;
+      resetSim();
+    });
+  });
+
+  startBtn.addEventListener('click', () => {
+    resetSim();
+    running = true;
+    startBtn.disabled = true;
+    spikeBtn.disabled = false;
+    rafId = requestAnimationFrame(tick);
+  });
+
+  spikeBtn.addEventListener('click', () => {
+    if(!running) return;
+    spikeTime = currentMinute;
+    spikeBtn.disabled = true;
+  });
+
+  resetBtn.addEventListener('click', resetSim);
+
+  render(0);
+})();
+</script>
+</body>
+</html>
