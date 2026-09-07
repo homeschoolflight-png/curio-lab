@@ -51,6 +51,8 @@ function route() {
     renderZone(parts[1]);
   } else if (parts[0] === "spark" && parts[1]) {
     renderSpark(parts[1]);
+  } else if (parts[0] === "simulators") {
+    renderSimulators();
   } else {
     renderHome();
   }
@@ -127,6 +129,15 @@ async function renderHome() {
     <button class="btn-primary" id="surprise-btn">
       <i class="ti ti-arrows-shuffle"></i> surprise me
     </button>
+
+    <a class="simulators-banner" href="#/simulators">
+      <i class="ti ti-flask-2"></i>
+      <div class="simulators-banner-text">
+        <p class="zone-title">curio lab simulators</p>
+        <p class="zone-desc">interactive simulators to poke at</p>
+      </div>
+      <i class="ti ti-chevron-right"></i>
+    </a>
   `;
 
   document.getElementById("surprise-btn").addEventListener("click", surpriseMe);
@@ -250,6 +261,49 @@ async function renderZone(zoneId) {
       `
         )
         .join("")}
+    </div>
+  `;
+}
+
+// ---- Simulators page ----
+// Add a row to the "simulators" table in Supabase and it shows up here
+// automatically - no code changes needed.
+async function renderSimulators() {
+  app.innerHTML = `<p class="loading-text">loading simulators...</p>`;
+
+  const { data: simulators, error } = await supabaseClient
+    .from("simulators")
+    .select("*")
+    .order("sort_order", { ascending: true });
+
+  if (error) {
+    app.innerHTML = `<p class="error-text">couldn't load simulators: ${error.message}</p>`;
+    return;
+  }
+
+  const cardsHtml = (simulators || [])
+    .map(
+      (sim) => `
+    <a class="zone-tile" href="${sim.url}" target="_blank" rel="noopener noreferrer">
+      <i class="ti ti-${sim.icon || "device-gamepad-2"}"></i>
+      <p class="zone-title">${sim.title}</p>
+      <p class="zone-desc">${sim.description || ""}</p>
+    </a>
+  `
+    )
+    .join("");
+
+  app.innerHTML = `
+    <button class="back-link" onclick="window.location.hash='#/'">
+      <i class="ti ti-arrow-left"></i> curio lab
+    </button>
+
+    <i class="ti ti-flask-2" style="font-size:24px; color: var(--accent);"></i>
+    <h2>curio lab simulators</h2>
+    <p class="subtitle">pick one and start poking</p>
+
+    <div class="zone-grid">
+      ${cardsHtml || `<p class="subtitle">no simulators yet - add a row to the simulators table.</p>`}
     </div>
   `;
 }
