@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Brain Seesaw</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#0F1417;
+    --panel:#161D22;
+    --panel-line:#26323A;
+    --text-primary:#E8EDF0;
+    --text-muted:#8FA0A8;
+    --emotion:#FB923C;
+    --emotion-dim:#5A3B22;
+    --logic:#60A5FA;
+    --logic-dim:#1E3A5F;
+    --calm:#2DD4BF;
+    --calm-dim:#164A44;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg-deep);
+    color:var(--text-primary);
+    font-family:'IBM Plex Sans',sans-serif;
+    line-height:1.55;
+    padding:28px 16px 60px;
+  }
+  .wrap{max-width:760px;margin:0 auto;}
+
+  .console-header{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    border-bottom:1px solid var(--panel-line);
+    padding-bottom:14px;
+    margin-bottom:6px;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .console-header h1{font-size:1.5rem;margin:0;font-weight:700;letter-spacing:-0.01em;}
+  .console-header .tag{font-family:'IBM Plex Mono',monospace;font-size:0.72rem;color:var(--text-muted);}
+
+  .intro{color:var(--text-muted);font-size:0.98rem;max-width:64ch;margin:14px 0 28px;}
+  .intro strong{color:var(--text-primary);font-weight:600;}
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    border-radius:10px;
+    padding:22px;
+    margin-bottom:22px;
+  }
+  .panel h2{
+    font-size:0.78rem;
+    font-family:'IBM Plex Mono',monospace;
+    color:var(--text-muted);
+    margin:0 0 16px;
+    font-weight:500;
+    letter-spacing:0.02em;
+  }
+
+  .explain p{margin:0 0 12px;font-size:0.96rem;}
+  .explain p:last-child{margin-bottom:0;}
+
+  .row-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.65rem;
+    color:var(--text-muted);
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    margin-bottom:8px;
+  }
+
+  .seg-row, .hack-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+  .seg-btn, .hack-btn{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.76rem;
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    color:var(--text-muted);
+    padding:10px 14px;
+    border-radius:6px;
+    cursor:pointer;
+    transition:border-color 0.2s ease,color 0.2s ease;
+  }
+  .seg-btn:hover{border-color:var(--emotion);color:var(--text-primary);}
+  .hack-btn:hover{border-color:var(--logic);color:var(--text-primary);}
+
+  /* readouts */
+  .readouts{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+    gap:12px;
+    margin-bottom:18px;
+  }
+  .readout{
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    border-radius:8px;
+    padding:12px 14px;
+  }
+  .readout .label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.65rem;
+    color:var(--text-muted);
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+  }
+  .readout .value{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:1.3rem;
+    font-weight:600;
+    margin-top:4px;
+    color:var(--text-primary);
+    transition:color 0.3s ease;
+  }
+  .readout .value.emotion-c{color:var(--emotion);}
+  .readout .value.logic-c{color:var(--logic);}
+  .readout .value.calm-c{color:var(--calm);}
+
+  /* seesaw diagram */
+  .seesaw-box{
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    border-radius:8px;
+    padding:18px 14px 10px;
+    margin-bottom:14px;
+  }
+  .seesaw-box svg{width:100%;height:auto;display:block;max-width:420px;margin:0 auto;}
+  .beam{transition:transform 0.6s cubic-bezier(.34,1.4,.64,1);transform-origin:150px 90px;}
+  .weight{transition:fill 0.4s ease;}
+  .weight.emo{fill:var(--emotion-dim);}
+  .weight.emo.hot{fill:var(--emotion);}
+  .weight.log{fill:var(--logic-dim);}
+  .weight.log.hot{fill:var(--logic);}
+  .seesaw-label{font-family:'IBM Plex Mono',monospace;font-size:9px;fill:var(--text-muted);}
+  .pivot{fill:#3A4750;}
+
+  /* graph */
+  .graph-box{
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    border-radius:8px;
+    padding:10px;
+    margin-bottom:6px;
+  }
+  canvas{width:100%;height:auto;display:block;}
+  .legend{
+    display:flex;
+    gap:16px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.68rem;
+    color:var(--text-muted);
+    margin-top:8px;
+  }
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .swatch{width:10px;height:10px;border-radius:2px;display:inline-block;}
+
+  .graph-caption{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.65rem;
+    color:var(--text-muted);
+    margin-top:6px;
+  }
+
+  .feedback{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.75rem;
+    color:var(--text-muted);
+    min-height:34px;
+    margin-top:14px;
+    max-width:60ch;
+  }
+
+  .ctrl-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:6px;}
+  button.action{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.74rem;
+    background:transparent;
+    border:1px solid var(--panel-line);
+    color:var(--text-primary);
+    padding:8px 14px;
+    border-radius:6px;
+    cursor:pointer;
+    transition:border-color 0.2s ease, opacity 0.2s ease;
+  }
+  button.action:hover{border-color:var(--text-primary);}
+
+  .callout{
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    border-left:3px solid var(--calm);
+    border-radius:6px;
+    padding:12px 14px;
+    font-size:0.9rem;
+    color:var(--text-muted);
+    margin-top:14px;
+  }
+  .callout strong{color:var(--text-primary);}
+
+  footer{
+    margin-top:8px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.68rem;
+    color:var(--text-muted);
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+<div class="wrap" id="stage">
+
+  <div class="console-header">
+    <h1>The Brain Seesaw</h1>
+    <span class="tag">logical brain override // hack zone experiment 06</span>
+  </div>
+
+  <p class="intro">
+    You can't fully panic and do long division at the same time. The emotional brain and the logical
+    brain share the same limited resources — when one lights up hard, it dims the other. That's not a
+    metaphor, it's a seesaw you can actually watch tip back and forth below.
+  </p>
+
+  <div class="panel explain">
+    <h2>01 — WHAT'S ACTUALLY HAPPENING</h2>
+    <p>Your <strong>amygdala</strong> is the fast, reflexive part of the brain that reacts to a threat or an annoyance before you've consciously thought anything. Your <strong>prefrontal cortex</strong> is the slower, deliberate part that reasons, plans, and does things like counting or sorting.</p>
+    <p>These two systems have an inverse relationship under load — strong activation in one is associated with reduced activity in the other. That means you can deliberately tip the seesaw: forcing yourself into a structured, analytical task pulls activation toward the logical side and away from the emotional one, not by arguing yourself down, but by out-competing it for the same resources.</p>
+  </div>
+
+  <div class="panel">
+    <h2>02 — LIVE SEESAW SIMULATOR</h2>
+
+    <div class="row-label">Something happens</div>
+    <div class="seg-row" id="triggerRow">
+      <button class="seg-btn" data-scn="comment">Annoying comment</button>
+      <button class="seg-btn" data-scn="interrupt">Interrupted again</button>
+      <button class="seg-btn" data-scn="blame">Unfair blame</button>
+    </div>
+
+    <div class="row-label">Force yourself into the logical brain</div>
+    <div class="hack-row">
+      <button class="hack-btn" id="countBtn" title="Count backwards from a number in the 90s by 5s.">Count backwards by 5s</button>
+      <button class="hack-btn" id="categorizeBtn" title="Silently sort everything in the room into a category.">Categorize the room</button>
+      <button class="hack-btn" id="nothingBtn" title="Just wait it out with no task — for comparison.">Do nothing (control)</button>
+    </div>
+
+    <div class="readouts">
+      <div class="readout"><div class="label">Emotional brain</div><div class="value" id="emoVal">20</div></div>
+      <div class="readout"><div class="label">Logical brain</div><div class="value" id="logVal">80</div></div>
+      <div class="readout"><div class="label">State</div><div class="value" id="stVal">Balanced</div></div>
+    </div>
+
+    <div class="seesaw-box">
+      <svg viewBox="0 0 300 150">
+        <rect class="pivot" x="140" y="88" width="20" height="16" rx="2"/>
+        <polygon class="pivot" points="150,70 172,104 128,104"/>
+        <g class="beam" id="beam">
+          <rect x="20" y="86" width="260" height="8" rx="4" fill="#3A4750"/>
+          <circle class="weight emo" id="weightEmo" cx="40" cy="86" r="16"/>
+          <circle class="weight log" id="weightLog" cx="260" cy="86" r="16"/>
+          <text class="seesaw-label" x="26" y="90" fill="#0F1417">EMO</text>
+          <text class="seesaw-label" x="246" y="90" fill="#0F1417">LOG</text>
+        </g>
+        <text class="seesaw-label" x="20" y="135">Emotional brain</text>
+        <text class="seesaw-label" x="230" y="135">Logical brain</text>
+      </svg>
+    </div>
+
+    <div class="graph-box">
+      <canvas id="graph" width="800" height="220"></canvas>
+    </div>
+    <div class="legend">
+      <span><span class="swatch" style="background:var(--emotion);"></span>Emotional brain</span>
+      <span><span class="swatch" style="background:var(--logic);"></span>Logical brain</span>
+    </div>
+    <div class="graph-caption">Trigger something, then try a logical task. Notice the two lines are always mirror images — one only goes up when the other goes down.</div>
+
+    <div class="feedback" id="feedback">Pick a scenario to start.</div>
+
+    <div class="ctrl-row">
+      <button class="action" id="resetBtn">Reset session</button>
+    </div>
+  </div>
+
+  <div class="panel explain">
+    <h2>03 — THE CATCH</h2>
+    <p>Notice that counting or categorizing barely moves the needle right after a big spike — the emotional brain is dominating too hard for the logical brain to get a foothold. Keep going anyway. Each bit of forced logical effort chips away at it, and past a certain point the seesaw tips fast.</p>
+    <div class="callout"><strong>This is why "just calm down" doesn't work but "count backwards from 100 by 5s" sometimes does.</strong> Telling yourself to be logical is still an emotional-brain instruction. Actually doing a structured task forces the logical brain online directly — no persuasion required, just competition for the same resources.</div>
+  </div>
+
+  <footer>Simulated data for teaching purposes — not medical or psychological advice.</footer>
+</div>
+
+<script>
+(function(){
+  const canvas = document.getElementById('graph');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const padL = 30, padR = 12, padT = 12, padB = 20;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const WINDOW = 20;
+  const yMin = 0, yMax = 100;
+  const BASE_EMOTION = 20;
+
+  const triggerRow = document.getElementById('triggerRow');
+  const countBtn = document.getElementById('countBtn');
+  const categorizeBtn = document.getElementById('categorizeBtn');
+  const nothingBtn = document.getElementById('nothingBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const emoVal = document.getElementById('emoVal');
+  const logVal = document.getElementById('logVal');
+  const stVal = document.getElementById('stVal');
+  const feedback = document.getElementById('feedback');
+  const beam = document.getElementById('beam');
+  const weightEmo = document.getElementById('weightEmo');
+  const weightLog = document.getElementById('weightLog');
+
+  const SCENARIOS = {
+    comment:   {label:'Annoying comment', base: 50},
+    interrupt: {label:'Interrupted again', base: 62},
+    blame:     {label:'Unfair blame',      base: 75},
+  };
+
+  let emotion = BASE_EMOTION;
+  let history = [[0, BASE_EMOTION]];
+  let startTs = null;
+  let simTime = 0;
+  let rafId = null;
+
+  function logicFromEmotion(e){ return Math.max(0, Math.min(100, 100 - e)); }
+
+  function xForTime(t){
+    const tMin = Math.max(0, simTime - WINDOW);
+    return padL + ((t - tMin) / WINDOW) * plotW;
+  }
+  function yForValue(v){ return padT + plotH - ((v - yMin) / (yMax - yMin)) * plotH; }
+
+  function drawGrid(){
+    ctx.clearRect(0,0,W,H);
+    ctx.font = '11px IBM Plex Mono, monospace';
+    ctx.fillStyle = '#63737B';
+    [0,50,100].forEach(v=>{
+      const y = yForValue(v);
+      ctx.strokeStyle = '#171F26';
+      ctx.beginPath();
+      ctx.moveTo(padL, y);
+      ctx.lineTo(W - padR, y);
+      ctx.stroke();
+      ctx.fillText(v, 4, y+4);
+    });
+  }
+
+  function trimmedHistory(){
+    const tMin = Math.max(0, simTime - WINDOW);
+    return history.filter(p => p[0] >= tMin - 1);
+  }
+
+  function drawSeries(getVal, color){
+    const pts = trimmedHistory().map(p => [xForTime(p[0]), yForValue(getVal(p))]);
+    if(pts.length < 2) return;
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i][0], pts[i][1]);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2.2;
+    ctx.stroke();
+    const last = pts[pts.length-1];
+    ctx.beginPath();
+    ctx.arc(last[0], last[1], 4, 0, Math.PI*2);
+    ctx.fillStyle = color;
+    ctx.fill();
+  }
+
+  function render(){
+    drawGrid();
+    drawSeries(p => p[1], '#FB923C');
+    drawSeries(p => logicFromEmotion(p[1]), '#60A5FA');
+  }
+
+  function updateReadouts(){
+    const logic = logicFromEmotion(emotion);
+    emoVal.textContent = Math.round(emotion);
+    emoVal.className = 'value ' + (emotion > 55 ? 'emotion-c' : (emotion < 25 ? 'calm-c' : ''));
+    logVal.textContent = Math.round(logic);
+    logVal.className = 'value ' + (logic > 65 ? 'logic-c' : (logic < 35 ? 'emotion-c' : ''));
+    let state = 'Balanced';
+    if(emotion > 65) state = 'Flooded';
+    else if(emotion > 35) state = 'Split';
+    else state = 'Logical mode';
+    stVal.textContent = state;
+
+    // tip the seesaw: emotion high -> tips toward emotion side (down-left)
+    const tilt = ((emotion - 50) / 50) * 12; // degrees, +tilt = emo side down
+    beam.style.transform = 'rotate(' + tilt.toFixed(2) + 'deg)';
+    weightEmo.classList.toggle('hot', emotion > 55);
+    weightLog.classList.toggle('hot', logic > 55);
+  }
+
+  function pushHistory(){ history.push([simTime, emotion]); }
+
+  function tick(ts){
+    if(startTs === null) startTs = ts;
+    simTime = (ts - startTs) / 1000;
+    // slow passive decay toward baseline
+    emotion += (BASE_EMOTION - emotion) * 0.006;
+    emotion = Math.max(0, Math.min(100, emotion));
+    if(Math.floor(simTime*4) !== Math.floor((simTime-0.016)*4)) pushHistory();
+    render();
+    updateReadouts();
+    rafId = requestAnimationFrame(tick);
+  }
+
+  triggerRow.querySelectorAll('.seg-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const key = btn.dataset.scn;
+      const scn = SCENARIOS[key];
+      emotion = Math.min(100, emotion + scn.base);
+      pushHistory();
+      feedback.textContent = scn.label + ' just spiked the emotional brain to ' + Math.round(emotion) + '. Try a logical task.';
+    });
+  });
+
+  function tryLogicalTask(name, strongPull, weakPull){
+    const effective = emotion < 65;
+    const pull = effective ? strongPull : weakPull;
+    emotion = Math.max(0, emotion - pull);
+    pushHistory();
+    if(effective){
+      feedback.textContent = name + ' pulled the seesaw toward logical — the emotional brain had room to lose ground.';
+    } else {
+      feedback.textContent = name + ' barely moved it this time — still too flooded for the logical brain to get much traction. Keep going.';
+    }
+  }
+
+  countBtn.addEventListener('click', ()=>tryLogicalTask('Counting backwards by 5s', 16, 5));
+  categorizeBtn.addEventListener('click', ()=>tryLogicalTask('Categorizing the room', 14, 4));
+  nothingBtn.addEventListener('click', ()=>{
+    pushHistory();
+    feedback.textContent = 'Doing nothing lets it fade on its own, slowly — logical tasks speed that up considerably.';
+  });
+
+  resetBtn.addEventListener('click', ()=>{
+    emotion = BASE_EMOTION;
+    history = [[simTime, BASE_EMOTION]];
+    feedback.textContent = 'Session reset. Pick a scenario to start.';
+  });
+
+  rafId = requestAnimationFrame(tick);
+})();
+</script>
+
+</body>
+</html>
