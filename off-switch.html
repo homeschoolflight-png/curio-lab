@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Off-Switch: Vagus Nerve &amp; the Parasympathetic System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#0F1417;
+    --panel:#161D22;
+    --panel-line:#26323A;
+    --text-primary:#E8EDF0;
+    --text-muted:#8FA0A8;
+    --calm:#2DD4BF;
+    --calm-dim:#1B4A46;
+    --stress:#FB923C;
+    --stress-dim:#5A3B22;
+    --vagus:#60A5FA;
+    --vagus-dim:#1E3A5F;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg-deep);
+    color:var(--text-primary);
+    font-family:'IBM Plex Sans',sans-serif;
+    line-height:1.55;
+    padding:28px 16px 60px;
+  }
+  .wrap{max-width:760px;margin:0 auto;}
+
+  .console-header{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    border-bottom:1px solid var(--panel-line);
+    padding-bottom:14px;
+    margin-bottom:6px;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .console-header h1{
+    font-size:1.5rem;
+    margin:0;
+    font-weight:700;
+    letter-spacing:-0.01em;
+  }
+  .console-header .tag{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.72rem;
+    color:var(--text-muted);
+  }
+
+  .intro{
+    color:var(--text-muted);
+    font-size:0.98rem;
+    max-width:64ch;
+    margin:14px 0 28px;
+  }
+  .intro strong{color:var(--text-primary);font-weight:600;}
+
+  /* ---- Panel shell ---- */
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    border-radius:10px;
+    padding:22px;
+    margin-bottom:22px;
+  }
+  .panel h2{
+    font-size:0.78rem;
+    font-family:'IBM Plex Mono',monospace;
+    text-transform:none;
+    color:var(--text-muted);
+    margin:0 0 16px;
+    font-weight:500;
+    letter-spacing:0.02em;
+  }
+
+  /* ---- Toggle switch ---- */
+  .switch-row{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    margin-bottom:20px;
+    flex-wrap:wrap;
+  }
+  .switch{
+    position:relative;
+    width:132px;
+    height:40px;
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    border-radius:20px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    padding:3px;
+    user-select:none;
+  }
+  .switch .knob{
+    width:56px;
+    height:32px;
+    border-radius:16px;
+    background:var(--stress);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.68rem;
+    font-weight:600;
+    color:#1a0f04;
+    transition:transform 0.45s cubic-bezier(.65,0,.35,1), background 0.45s ease;
+    transform:translateX(0);
+  }
+  .switch.is-calm .knob{
+    transform:translateX(68px);
+    background:var(--calm);
+    color:#04211d;
+  }
+  .switch-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.75rem;
+    color:var(--text-muted);
+  }
+  .switch-label b{color:var(--text-primary);}
+
+  /* ---- Readouts ---- */
+  .readouts{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+    gap:12px;
+    margin-bottom:22px;
+  }
+  .readout{
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    border-radius:8px;
+    padding:12px 14px;
+  }
+  .readout .label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.65rem;
+    color:var(--text-muted);
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+  }
+  .readout .value{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:1.35rem;
+    font-weight:600;
+    margin-top:4px;
+    transition:color 0.4s ease;
+  }
+  .state-stress .readout .value{color:var(--stress);}
+  .state-calm .readout .value{color:var(--calm);}
+
+  /* ---- EKG wave ---- */
+  .wave-box{
+    position:relative;
+    height:90px;
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    border-radius:8px;
+    overflow:hidden;
+    margin-bottom:6px;
+  }
+  .wave-box svg{
+    position:absolute;
+    top:0;left:0;
+    height:100%;
+    width:200%;
+  }
+  .wave-stress, .wave-calm{
+    opacity:0;
+    transition:opacity 0.6s ease;
+  }
+  .state-stress .wave-stress{
+    opacity:1;
+    animation:scrollWave 1.1s linear infinite;
+  }
+  .state-calm .wave-calm{
+    opacity:1;
+    animation:scrollWave 3.2s linear infinite;
+  }
+  @keyframes scrollWave{
+    from{transform:translateX(0);}
+    to{transform:translateX(-50%);}
+  }
+  .wave-caption{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.65rem;
+    color:var(--text-muted);
+    margin-top:6px;
+  }
+
+  /* ---- Body diagram ---- */
+  .diagram-row{
+    display:flex;
+    gap:24px;
+    align-items:flex-start;
+    flex-wrap:wrap;
+  }
+  .diagram-box{
+    flex:0 0 200px;
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    border-radius:8px;
+    padding:10px;
+  }
+  .diagram-box svg{width:100%;height:auto;display:block;}
+  .vagus-path{
+    fill:none;
+    stroke:var(--vagus-dim);
+    stroke-width:3;
+    stroke-linecap:round;
+    transition:stroke 0.5s ease;
+  }
+  .state-calm .vagus-path{stroke:var(--vagus);}
+  .pulse-dot{
+    r:4;
+    fill:var(--vagus);
+    opacity:0;
+  }
+  .state-calm .pulse-dot{
+    opacity:1;
+    animation:travel 2.6s linear infinite;
+  }
+  .state-stress .pulse-dot{opacity:0;}
+  @keyframes travel{
+    0%{offset-distance:0%; opacity:0;}
+    8%{opacity:1;}
+    92%{opacity:1;}
+    100%{offset-distance:100%; opacity:0;}
+  }
+  .pulse-dot{ offset-path: path('M100,26 L100,60 Q100,78 84,84 Q64,92 62,120 Q60,150 78,168'); }
+
+  .diagram-notes{flex:1 1 220px; min-width:220px;}
+  .diagram-notes ul{margin:0;padding-left:18px;}
+  .diagram-notes li{margin-bottom:8px;font-size:0.92rem;}
+  .diagram-notes li span{
+    display:block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.68rem;
+    color:var(--text-muted);
+    margin-top:2px;
+  }
+
+  /* ---- Explanation text ---- */
+  .explain p{margin:0 0 12px;font-size:0.96rem;}
+  .explain p:last-child{margin-bottom:0;}
+
+  /* ---- Breathing pacer ---- */
+  .pacer-area{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:16px;
+    padding:12px 0 4px;
+  }
+  .pacer-circle{
+    width:120px;
+    height:120px;
+    border-radius:50%;
+    background:radial-gradient(circle at 40% 35%, #3fe0c8, var(--calm-dim));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.85rem;
+    font-weight:600;
+    color:#04211d;
+    transform:scale(0.72);
+    transition:transform 4s ease-in-out;
+  }
+  .pacer-circle.exhale{
+    transform:scale(1);
+    transition:transform 8s ease-in-out;
+  }
+  .pacer-controls{
+    display:flex;
+    gap:10px;
+    align-items:center;
+  }
+  button{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.78rem;
+    background:transparent;
+    border:1px solid var(--panel-line);
+    color:var(--text-primary);
+    padding:9px 16px;
+    border-radius:6px;
+    cursor:pointer;
+    transition:border-color 0.2s ease, background 0.2s ease;
+  }
+  button:hover{border-color:var(--calm);}
+  button:disabled{opacity:0.4;cursor:default;}
+  button:disabled:hover{border-color:var(--panel-line);}
+  .breath-count{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.72rem;
+    color:var(--text-muted);
+  }
+  .pacer-note{
+    font-size:0.85rem;
+    color:var(--text-muted);
+    text-align:center;
+    max-width:44ch;
+  }
+
+  footer{
+    margin-top:8px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.68rem;
+    color:var(--text-muted);
+    text-align:center;
+  }
+</style>
+</head>
+<body class="state-stress" id="stage">
+
+<div class="wrap">
+
+  <div class="console-header">
+    <h1>The Off-Switch</h1>
+    <span class="tag">nervous system // hack zone experiment 01</span>
+  </div>
+
+  <p class="intro">
+    Your body runs two opposite modes: <strong>sympathetic</strong> (gas pedal — alert, fast, ready to react)
+    and <strong>parasympathetic</strong> (brake pedal — rest, digest, repair). The main wire the brake pedal
+    uses is called the <strong>vagus nerve</strong>. Flip the switch below to see what changes.
+  </p>
+
+  <div class="panel">
+    <h2>01 — LIVE STATE MONITOR</h2>
+
+    <div class="switch-row">
+      <div class="switch" id="switch" role="button" aria-pressed="false">
+        <div class="knob" id="knob">OFF</div>
+      </div>
+      <span class="switch-label">Body is in <b id="stateLabel">STRESS mode</b></span>
+    </div>
+
+    <div class="readouts">
+      <div class="readout"><div class="label">Heart rate</div><div class="value" id="hrValue">108 bpm</div></div>
+      <div class="readout"><div class="label">Breath rate</div><div class="value" id="brValue">18 /min</div></div>
+      <div class="readout"><div class="label">Digestion</div><div class="value" id="digValue">Paused</div></div>
+      <div class="readout"><div class="label">Vagus signal</div><div class="value" id="vagValue">Quiet</div></div>
+    </div>
+
+    <div class="wave-box">
+      <svg class="wave-stress" viewBox="0 0 400 90" preserveAspectRatio="none">
+        <polyline points="0,45 20,45 26,20 32,70 38,45 60,45 66,25 72,65 78,45 100,45 106,15 112,75 118,45 140,45 146,22 152,68 158,45 180,45 186,20 192,70 198,45 220,45 226,25 232,65 238,45 260,45 266,15 272,75 278,45 300,45 306,22 312,68 318,45 340,45 346,20 352,70 358,45 380,45 386,25 392,65 398,45 400,45" fill="none" stroke="#FB923C" stroke-width="2"/>
+        <polyline points="400,45 420,45 426,20 432,70 438,45 460,45 466,25 472,65 478,45 500,45 506,15 512,75 518,45 540,45 546,22 552,68 558,45 580,45 586,20 592,70 598,45 620,45 626,25 632,65 638,45 660,45 666,15 672,75 678,45 700,45 706,22 712,68 718,45 740,45 746,20 752,70 758,45 780,45 786,25 792,65 798,45 800,45" fill="none" stroke="#FB923C" stroke-width="2" transform="translate(-400,0)"/>
+      </svg>
+      <svg class="wave-calm" viewBox="0 0 400 90" preserveAspectRatio="none">
+        <polyline points="0,45 40,45 55,30 70,60 85,45 130,45 145,32 160,58 175,45 220,45 235,30 250,60 265,45 310,45 325,32 340,58 355,45 400,45" fill="none" stroke="#2DD4BF" stroke-width="2"/>
+        <polyline points="400,45 440,45 455,30 470,60 485,45 530,45 545,32 560,58 575,45 620,45 635,30 650,60 665,45 710,45 725,32 740,58 755,45 800,45" fill="none" stroke="#2DD4BF" stroke-width="2" transform="translate(-400,0)"/>
+      </svg>
+    </div>
+    <div class="wave-caption">Simulated heart-rhythm trace — jagged &amp; fast under stress, smoother &amp; slower once calm.</div>
+  </div>
+
+  <div class="panel">
+    <h2>02 — WHERE THE SIGNAL TRAVELS</h2>
+    <div class="diagram-row">
+      <div class="diagram-box">
+        <svg viewBox="0 0 200 220">
+          <!-- simple body outline -->
+          <circle cx="100" cy="16" r="14" fill="none" stroke="#3A4750" stroke-width="2"/>
+          <path d="M78,32 Q100,26 122,32 L128,120 Q120,190 100,205 Q80,190 72,120 Z" fill="none" stroke="#3A4750" stroke-width="2"/>
+          <!-- vagus nerve path: brainstem -> neck -> chest(heart) -> abdomen(gut) -->
+          <path class="vagus-path" d="M100,26 L100,60 Q100,78 84,84 Q64,92 62,120 Q60,150 78,168"/>
+          <path class="vagus-path" d="M100,26 L100,60 Q100,78 116,84 Q136,92 138,120 Q140,150 122,168"/>
+          <!-- organ markers -->
+          <circle cx="100" cy="86" r="6" fill="#3A4750"/>
+          <circle cx="100" cy="140" r="8" fill="#3A4750"/>
+          <circle class="pulse-dot" cx="0" cy="0"/>
+        </svg>
+      </div>
+      <div class="diagram-notes">
+        <ul>
+          <li>Brainstem <span>signal starts here, just behind the ears</span></li>
+          <li>Heart <span>vagus signal slows heart rate</span></li>
+          <li>Lungs <span>works with breathing rhythm</span></li>
+          <li>Gut <span>turns digestion back on</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel explain">
+    <h2>03 — THE SHORT VERSION</h2>
+    <p>The vagus nerve is the longest wire in the parasympathetic system. It runs from your brainstem down through your neck, chest, and abdomen, touching your heart, lungs, and gut along the way.</p>
+    <p>When it's active, it tells your heart to slow down, your gut to keep digesting, and your whole body that it's safe to stand down from alert mode. When it's quiet, the sympathetic system is running the show instead — faster heart rate, paused digestion, pupils wide.</p>
+    <p>The nerve has stretch receptors in your lungs and diaphragm. A slow inhale followed by a <strong>longer exhale</strong> physically pulls on those receptors — that's the actual mechanical trigger, not a metaphor. Try it below.</p>
+  </div>
+
+  <div class="panel">
+    <h2>04 — EXPERIMENT: BREATHE THE SWITCH ON</h2>
+    <div class="pacer-area">
+      <div class="pacer-circle" id="pacerCircle">breathe</div>
+      <div class="pacer-controls">
+        <button id="startBtn">Start pacer</button>
+        <button id="stopBtn" disabled>Stop</button>
+      </div>
+      <div class="breath-count" id="breathCount">0 breaths completed</div>
+      <div class="pacer-note">4 seconds in, 8 seconds out. Watch the monitor above switch itself to calm after a few rounds — that's the effect you just read about, happening on the same page.</div>
+    </div>
+  </div>
+
+  <footer>Simulated data for teaching purposes — not a medical device.</footer>
+</div>
+
+<script>
+  const stage = document.getElementById('stage');
+  const sw = document.getElementById('switch');
+  const knob = document.getElementById('knob');
+  const stateLabel = document.getElementById('stateLabel');
+  const hrValue = document.getElementById('hrValue');
+  const brValue = document.getElementById('brValue');
+  const digValue = document.getElementById('digValue');
+  const vagValue = document.getElementById('vagValue');
+
+  function setState(calm){
+    stage.classList.toggle('state-calm', calm);
+    stage.classList.toggle('state-stress', !calm);
+    sw.classList.toggle('is-calm', calm);
+    knob.textContent = calm ? 'ON' : 'OFF';
+    sw.setAttribute('aria-pressed', calm);
+    stateLabel.textContent = calm ? 'CALM mode' : 'STRESS mode';
+    hrValue.textContent = calm ? '64 bpm' : '108 bpm';
+    brValue.textContent = calm ? '6 /min' : '18 /min';
+    digValue.textContent = calm ? 'Active' : 'Paused';
+    vagValue.textContent = calm ? 'Firing' : 'Quiet';
+  }
+
+  sw.addEventListener('click', () => {
+    const nowCalm = !stage.classList.contains('state-calm');
+    setState(nowCalm);
+  });
+
+  // Breathing pacer
+  const pacerCircle = document.getElementById('pacerCircle');
+  const startBtn = document.getElementById('startBtn');
+  const stopBtn = document.getElementById('stopBtn');
+  const breathCount = document.getElementById('breathCount');
+  let pacerTimer = null;
+  let cycles = 0;
+  let running = false;
+
+  function pacerCycle(){
+    if(!running) return;
+    // inhale phase
+    pacerCircle.classList.remove('exhale');
+    pacerCircle.textContent = 'in...';
+    pacerTimer = setTimeout(() => {
+      if(!running) return;
+      // exhale phase
+      pacerCircle.classList.add('exhale');
+      pacerCircle.textContent = 'out...';
+      pacerTimer = setTimeout(() => {
+        if(!running) return;
+        cycles++;
+        breathCount.textContent = cycles + ' breath' + (cycles === 1 ? '' : 's') + ' completed';
+        if(cycles === 3){
+          setState(true);
+        }
+        pacerCycle();
+      }, 8000);
+    }, 4000);
+  }
+
+  startBtn.addEventListener('click', () => {
+    running = true;
+    cycles = 0;
+    breathCount.textContent = '0 breaths completed';
+    startBtn.disabled = true;
+    stopBtn.disabled = false;
+    setState(false);
+    pacerCycle();
+  });
+
+  stopBtn.addEventListener('click', () => {
+    running = false;
+    clearTimeout(pacerTimer);
+    pacerCircle.classList.remove('exhale');
+    pacerCircle.textContent = 'breathe';
+    startBtn.disabled = false;
+    stopBtn.disabled = true;
+  });
+</script>
+
+</body>
+</html>
