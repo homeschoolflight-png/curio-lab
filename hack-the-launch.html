@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hack the Launch: Getting Started on Purpose</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#0F1417;
+    --panel:#161D22;
+    --panel-line:#26323A;
+    --text-primary:#E8EDF0;
+    --text-muted:#8FA0A8;
+    --resist:#FB923C;
+    --resist-dim:#5A3B22;
+    --progress:#2DD4BF;
+    --progress-dim:#164A44;
+    --lock:#60A5FA;
+    --lock-dim:#1E3A5F;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg-deep);
+    color:var(--text-primary);
+    font-family:'IBM Plex Sans',sans-serif;
+    line-height:1.55;
+    padding:28px 16px 60px;
+  }
+  .wrap{max-width:760px;margin:0 auto;}
+
+  .console-header{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    border-bottom:1px solid var(--panel-line);
+    padding-bottom:14px;
+    margin-bottom:6px;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .console-header h1{font-size:1.5rem;margin:0;font-weight:700;letter-spacing:-0.01em;}
+  .console-header .tag{font-family:'IBM Plex Mono',monospace;font-size:0.72rem;color:var(--text-muted);}
+
+  .intro{color:var(--text-muted);font-size:0.98rem;max-width:64ch;margin:14px 0 28px;}
+  .intro strong{color:var(--text-primary);font-weight:600;}
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    border-radius:10px;
+    padding:22px;
+    margin-bottom:22px;
+  }
+  .panel h2{
+    font-size:0.78rem;
+    font-family:'IBM Plex Mono',monospace;
+    color:var(--text-muted);
+    margin:0 0 16px;
+    font-weight:500;
+    letter-spacing:0.02em;
+  }
+
+  /* playbook list */
+  .playbook{margin:0;padding-left:0;list-style:none;}
+  .playbook li{
+    display:flex;
+    gap:12px;
+    margin-bottom:14px;
+    align-items:flex-start;
+  }
+  .playbook li:last-child{margin-bottom:0;}
+  .playbook .num{
+    flex:0 0 auto;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.75rem;
+    color:var(--progress);
+    border:1px solid var(--progress-dim);
+    border-radius:5px;
+    width:22px;height:22px;
+    display:flex;align-items:center;justify-content:center;
+    margin-top:1px;
+  }
+  .playbook .txt strong{color:var(--text-primary);}
+  .playbook .txt{font-size:0.94rem;color:var(--text-muted);}
+
+  /* seg row (task picker) */
+  .seg-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+  .seg-btn{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.78rem;
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    color:var(--text-muted);
+    padding:10px 14px;
+    border-radius:6px;
+    cursor:pointer;
+    transition:border-color 0.2s ease,color 0.2s ease;
+  }
+  .seg-btn.active{border-color:var(--resist);color:var(--text-primary);}
+  .seg-btn:disabled{opacity:0.4;cursor:default;}
+
+  /* hack toggles */
+  .hack-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+  .hack-btn{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.74rem;
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    color:var(--text-muted);
+    padding:9px 13px;
+    border-radius:6px;
+    cursor:pointer;
+    transition:border-color 0.2s ease,color 0.2s ease;
+  }
+  .hack-btn.active{border-color:var(--lock);color:var(--text-primary);}
+  .hack-btn:disabled{opacity:0.4;cursor:default;}
+
+  /* readouts */
+  .readouts{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+    gap:12px;
+    margin-bottom:18px;
+  }
+  .readout{
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    border-radius:8px;
+    padding:12px 14px;
+  }
+  .readout .label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.65rem;
+    color:var(--text-muted);
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+  }
+  .readout .value{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:1.3rem;
+    font-weight:600;
+    margin-top:4px;
+    color:var(--text-primary);
+    transition:color 0.3s ease;
+  }
+  .readout .value.resist-c{color:var(--resist);}
+  .readout .value.progress-c{color:var(--progress);}
+  .readout .value.lock-c{color:var(--lock);}
+
+  /* graph */
+  .graph-box{
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    border-radius:8px;
+    padding:10px;
+    margin-bottom:6px;
+    position:relative;
+  }
+  canvas{width:100%;height:auto;display:block;}
+  .graph-caption{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.65rem;
+    color:var(--text-muted);
+    margin-top:6px;
+  }
+  .legend{
+    display:flex;
+    gap:16px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.68rem;
+    color:var(--text-muted);
+    margin-top:8px;
+  }
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .swatch{width:10px;height:10px;border-radius:2px;display:inline-block;}
+
+  /* distraction popup */
+  .popup{
+    display:none;
+    background:#0C1013;
+    border:1px solid var(--resist-dim);
+    border-radius:8px;
+    padding:12px 14px;
+    margin-top:14px;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .popup.show{display:flex;}
+  .popup .msg{font-size:0.85rem;color:var(--text-primary);}
+  .popup .msg .sub{display:block;font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:var(--text-muted);margin-top:2px;}
+  .popup .btns{display:flex;gap:8px;}
+
+  /* buttons */
+  .ctrl-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:16px;margin-bottom:6px;}
+  button.action{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.78rem;
+    background:transparent;
+    border:1px solid var(--panel-line);
+    color:var(--text-primary);
+    padding:10px 16px;
+    border-radius:6px;
+    cursor:pointer;
+    transition:border-color 0.2s ease, opacity 0.2s ease;
+  }
+  button.action:hover:not(:disabled){border-color:var(--progress);}
+  button.action:disabled{opacity:0.4;cursor:default;}
+  button.action.small{padding:7px 12px;font-size:0.72rem;}
+  button.action.stay{border-color:var(--progress-dim);}
+  button.action.stay:hover{border-color:var(--progress);}
+  button.action.give{border-color:var(--resist-dim);}
+  button.action.give:hover{border-color:var(--resist);}
+
+  .result{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.85rem;
+    margin-top:14px;
+    padding:12px 14px;
+    border-radius:8px;
+    border:1px solid var(--panel-line);
+    display:none;
+  }
+  .result.show{display:block;}
+  .result.win{border-color:var(--progress-dim);color:var(--progress);}
+  .result.lose{border-color:var(--resist-dim);color:var(--resist);}
+
+  footer{
+    margin-top:8px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.68rem;
+    color:var(--text-muted);
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+<div class="wrap" id="stage">
+
+  <div class="console-header">
+    <h1>Hack the Launch</h1>
+    <span class="tag">applied dopamine // hack zone experiment 04</span>
+  </div>
+
+  <p class="intro">
+    Same system as before — but now you're driving it on purpose. Most tasks aren't actually hard once
+    you're in them; the resistance is almost all bunched up right at the start. Here's how to get past it.
+  </p>
+
+  <div class="panel">
+    <h2>01 — THE PLAYBOOK</h2>
+    <ul class="playbook">
+      <li><span class="num">1</span><span class="txt"><strong>Shrink the ask.</strong> "Write the essay" has huge resistance. "Write one bad sentence" barely has any. The task doesn't actually get easier — you just stop needing a big deposit to start it.</span></li>
+      <li><span class="num">2</span><span class="txt"><strong>Don't spend right before.</strong> A scroll session right before a hard task drains the exact reserve you needed to start it. Empty tank, big hill.</span></li>
+      <li><span class="num">3</span><span class="txt"><strong>Put a small, certain reward at the end.</strong> It doesn't need to be big — it needs to be reliable. A known reward waiting at the finish line pulls you across the same way a predictable cue does.</span></li>
+      <li><span class="num">4</span><span class="txt"><strong>Survive the first push, not the whole task.</strong> Resistance drops off fast once you're moving. The goal is never "get through the whole thing" — it's just "get past the first minute."</span></li>
+    </ul>
+  </div>
+
+  <div class="panel">
+    <h2>02 — LIVE TASK-START SIMULATOR</h2>
+
+    <div class="seg-row" id="taskRow">
+      <button class="seg-btn active" data-task="chore">Boring chore</button>
+      <button class="seg-btn" data-task="workout">Hard workout</button>
+      <button class="seg-btn" data-task="project">Big scary project</button>
+    </div>
+
+    <div class="hack-row" id="hackRow">
+      <button class="hack-btn" data-hack="shrink">Shrink it (2-min rule)</button>
+      <button class="hack-btn" data-hack="reward">Reward waiting at the end</button>
+      <button class="hack-btn" data-hack="phone">Phone in another room</button>
+    </div>
+
+    <div class="readouts">
+      <div class="readout"><div class="label">Resistance</div><div class="value" id="resVal">—</div></div>
+      <div class="readout"><div class="label">Progress</div><div class="value" id="progVal">0%</div></div>
+      <div class="readout"><div class="label">Status</div><div class="value" id="statVal">Not started</div></div>
+    </div>
+
+    <div class="graph-box">
+      <canvas id="graph" width="800" height="220"></canvas>
+    </div>
+    <div class="legend">
+      <span><span class="swatch" style="background:var(--resist);"></span>Resistance</span>
+      <span><span class="swatch" style="background:var(--progress);"></span>Progress</span>
+    </div>
+    <div class="graph-caption">Pick a task, pick your hacks, then hit start. Watch which one actually gets you moving fastest.</div>
+
+    <div class="ctrl-row">
+      <button class="action" id="startBtn">Start the task</button>
+      <button class="action" id="resetBtn">Reset</button>
+    </div>
+
+    <div class="popup" id="popup">
+      <div class="msg">📱 A notification just popped up.<span class="sub" id="popupSub">Stay on task, or check it?</span></div>
+      <div class="btns">
+        <button class="action small stay" id="stayBtn">Stay on task</button>
+        <button class="action small give" id="giveBtn">Check it</button>
+      </div>
+    </div>
+
+    <div class="result" id="result"></div>
+  </div>
+
+  <footer>Simulated data for teaching purposes — not a medical device.</footer>
+</div>
+
+<script>
+(function(){
+  const canvas = document.getElementById('graph');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const padL = 30, padR = 12, padT = 12, padB = 20;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const yMin = 0, yMax = 100;
+  const RUN_SECONDS = 16;
+
+  const taskRow = document.getElementById('taskRow');
+  const hackRow = document.getElementById('hackRow');
+  const resVal = document.getElementById('resVal');
+  const progVal = document.getElementById('progVal');
+  const statVal = document.getElementById('statVal');
+  const startBtn = document.getElementById('startBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const popup = document.getElementById('popup');
+  const popupSub = document.getElementById('popupSub');
+  const stayBtn = document.getElementById('stayBtn');
+  const giveBtn = document.getElementById('giveBtn');
+  const result = document.getElementById('result');
+
+  const TASKS = {
+    chore:   {label:'Boring chore',       startRes: 55, decay: 0.055},
+    workout: {label:'Hard workout',       startRes: 70, decay: 0.045},
+    project: {label:'Big scary project',  startRes: 90, decay: 0.035},
+  };
+
+  let task = 'chore';
+  let hacks = {shrink:false, reward:false, phone:false};
+  let running = false;
+  let finished = false;
+  let startTs = null;
+  let simTime = 0;
+  let rafId = null;
+  let resHistory = [];
+  let progHistory = [];
+  let progress = 0;
+  let popupTimer = null;
+  let popupDeadline = null;
+  let popupActive = false;
+  let giveIns = 0;
+
+  taskRow.querySelectorAll('.seg-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      if(running) return;
+      taskRow.querySelectorAll('.seg-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      task = btn.dataset.task;
+      resetSim(false);
+    });
+  });
+
+  hackRow.querySelectorAll('.hack-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      if(running) return;
+      const h = btn.dataset.hack;
+      hacks[h] = !hacks[h];
+      btn.classList.toggle('active', hacks[h]);
+    });
+  });
+
+  function currentStartRes(){
+    let r = TASKS[task].startRes;
+    if(hacks.shrink) r -= 30;
+    return Math.max(15, r);
+  }
+
+  function xForTime(t){ return padL + (t / RUN_SECONDS) * plotW; }
+  function yForValue(v){ return padT + plotH - ((v - yMin) / (yMax - yMin)) * plotH; }
+
+  function drawGrid(){
+    ctx.clearRect(0,0,W,H);
+    ctx.font = '11px IBM Plex Mono, monospace';
+    ctx.fillStyle = '#63737B';
+    [0,50,100].forEach(v=>{
+      const y = yForValue(v);
+      ctx.strokeStyle = '#171F26';
+      ctx.beginPath();
+      ctx.moveTo(padL, y);
+      ctx.lineTo(W - padR, y);
+      ctx.stroke();
+      ctx.fillText(v, 4, y+4);
+    });
+  }
+
+  function drawSeries(hist, color){
+    if(hist.length < 2) return;
+    ctx.beginPath();
+    ctx.moveTo(xForTime(hist[0][0]), yForValue(hist[0][1]));
+    for(let i=1;i<hist.length;i++){
+      ctx.lineTo(xForTime(hist[i][0]), yForValue(hist[i][1]));
+    }
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2.2;
+    ctx.stroke();
+    const lastPt = hist[hist.length-1];
+    ctx.beginPath();
+    ctx.arc(xForTime(lastPt[0]), yForValue(lastPt[1]), 4, 0, Math.PI*2);
+    ctx.fillStyle = color;
+    ctx.fill();
+  }
+
+  function render(){
+    drawGrid();
+    drawSeries(resHistory, getComputedStyle(document.documentElement).getPropertyValue('--resist').trim() || '#FB923C');
+    drawSeries(progHistory, getComputedStyle(document.documentElement).getPropertyValue('--progress').trim() || '#2DD4BF');
+  }
+
+  function scheduleNextPopup(){
+    if(hacks.phone) return;
+    const delay = 3000 + Math.random()*3500;
+    popupTimer = setTimeout(triggerPopup, delay);
+  }
+
+  function triggerPopup(){
+    if(!running || finished) return;
+    popupActive = true;
+    popup.classList.add('show');
+    popupSub.textContent = 'Stay on task, or check it?';
+    let secondsLeft = 3;
+    popupSub.textContent = `Stay on task, or check it? (auto-checks in ${secondsLeft}s)`;
+    const iv = setInterval(()=>{
+      secondsLeft--;
+      if(!popupActive){ clearInterval(iv); return; }
+      if(secondsLeft <= 0){
+        clearInterval(iv);
+        resolvePopup(false); // gave in automatically
+      } else {
+        popupSub.textContent = `Stay on task, or check it? (auto-checks in ${secondsLeft}s)`;
+      }
+    }, 1000);
+  }
+
+  function resolvePopup(stayed){
+    if(!popupActive) return;
+    popupActive = false;
+    popup.classList.remove('show');
+    if(!stayed){
+      giveIns++;
+      // set a resistance spike + progress penalty
+      progress = Math.max(0, progress - 18);
+      pendingResistanceBoost = 25;
+    }
+    scheduleNextPopup();
+  }
+
+  stayBtn.addEventListener('click', ()=>resolvePopup(true));
+  giveBtn.addEventListener('click', ()=>resolvePopup(false));
+
+  let pendingResistanceBoost = 0;
+
+  function tick(ts){
+    if(!running) return;
+    if(startTs === null) startTs = ts;
+    simTime = (ts - startTs) / 1000;
+
+    const t = Math.min(simTime, RUN_SECONDS);
+    const startRes = currentStartRes();
+    const decay = TASKS[task].decay * (1 + (pendingResistanceBoost>0?-0.3:0));
+    let res = startRes * Math.exp(-decay * t * 8);
+    if(pendingResistanceBoost > 0){
+      res = Math.min(100, res + pendingResistanceBoost);
+      pendingResistanceBoost = Math.max(0, pendingResistanceBoost - 2.2);
+    }
+    if(hacks.reward && progress > 75){
+      res = Math.max(0, res - 20);
+    }
+    res = Math.max(0, Math.min(100, res));
+
+    const rate = (100 - res) / 55;
+    progress = Math.min(100, progress + rate);
+
+    resHistory.push([t, res]);
+    progHistory.push([t, progress]);
+
+    resVal.textContent = Math.round(res);
+    resVal.className = 'value ' + (res > 55 ? 'resist-c' : '');
+    progVal.textContent = Math.round(progress) + '%';
+    progVal.className = 'value progress-c';
+    statVal.textContent = progress >= 100 ? 'Done' : (res > 55 ? 'Fighting it' : 'In motion');
+
+    render();
+
+    if(progress >= 100){
+      finish(true);
+      return;
+    }
+    if(t >= RUN_SECONDS){
+      finish(false);
+      return;
+    }
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function finish(success){
+    running = false;
+    finished = true;
+    clearTimeout(popupTimer);
+    popup.classList.remove('show');
+    popupActive = false;
+    startBtn.disabled = false;
+    startBtn.textContent = 'Start the task';
+    result.classList.add('show');
+    if(success){
+      result.className = 'result show win';
+      result.textContent = `Made it. You got moving in ${Math.round(simTime)}s` + (giveIns>0 ? `, after giving in ${giveIns} time(s) — and still recovered.` : ' — no detours needed.');
+      statVal.textContent = 'Done';
+    } else {
+      result.className = 'result show lose';
+      result.textContent = `Ran out of time still fighting the resistance` + (giveIns>0 ? ` — ${giveIns} notification(s) pulled you off course.` : '.') + ' Try shrinking the task or moving your phone next round.';
+      statVal.textContent = 'Stalled out';
+    }
+  }
+
+  startBtn.addEventListener('click', ()=>{
+    resetSim(true);
+    running = true;
+    finished = false;
+    startBtn.disabled = true;
+    startBtn.textContent = 'Running…';
+    startTs = null;
+    rafId = requestAnimationFrame(tick);
+    scheduleNextPopup();
+  });
+
+  function resetSim(keepHacks){
+    running = false;
+    finished = false;
+    if(rafId) cancelAnimationFrame(rafId);
+    clearTimeout(popupTimer);
+    popup.classList.remove('show');
+    popupActive = false;
+    pendingResistanceBoost = 0;
+    giveIns = 0;
+    progress = 0;
+    simTime = 0;
+    startTs = null;
+    resHistory = [[0, currentStartRes()]];
+    progHistory = [[0, 0]];
+    resVal.textContent = currentStartRes();
+    resVal.className = 'value resist-c';
+    progVal.textContent = '0%';
+    progVal.className = 'value';
+    statVal.textContent = 'Not started';
+    startBtn.disabled = false;
+    startBtn.textContent = 'Start the task';
+    result.classList.remove('show');
+    render();
+  }
+
+  resetBtn.addEventListener('click', ()=>resetSim(true));
+
+  resetSim(true);
+})();
+</script>
+
+</body>
+</html>

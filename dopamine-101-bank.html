@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dopamine 101: The Bank</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#0F1417;
+    --panel:#161D22;
+    --panel-line:#26323A;
+    --text-primary:#E8EDF0;
+    --text-muted:#8FA0A8;
+    --save:#2DD4BF;
+    --save-dim:#164A44;
+    --spend:#FB923C;
+    --spend-dim:#5A3B22;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg-deep);
+    color:var(--text-primary);
+    font-family:'IBM Plex Sans',sans-serif;
+    line-height:1.55;
+    padding:28px 16px 60px;
+  }
+  .wrap{max-width:760px;margin:0 auto;}
+
+  .console-header{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    border-bottom:1px solid var(--panel-line);
+    padding-bottom:14px;
+    margin-bottom:6px;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .console-header h1{font-size:1.5rem;margin:0;font-weight:700;letter-spacing:-0.01em;}
+  .console-header .tag{font-family:'IBM Plex Mono',monospace;font-size:0.72rem;color:var(--text-muted);}
+
+  .intro{color:var(--text-muted);font-size:0.98rem;max-width:64ch;margin:14px 0 28px;}
+  .intro strong{color:var(--text-primary);font-weight:600;}
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    border-radius:10px;
+    padding:22px;
+    margin-bottom:22px;
+  }
+  .panel h2{
+    font-size:0.78rem;
+    font-family:'IBM Plex Mono',monospace;
+    color:var(--text-muted);
+    margin:0 0 16px;
+    font-weight:500;
+    letter-spacing:0.02em;
+  }
+
+  .explain p{margin:0 0 12px;font-size:0.96rem;}
+  .explain p:last-child{margin-bottom:0;}
+
+  /* balance meter */
+  .balance-row{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    margin-bottom:18px;
+    flex-wrap:wrap;
+  }
+  .balance-figure{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:2.4rem;
+    font-weight:600;
+    color:var(--text-primary);
+    line-height:1;
+    transition:color 0.3s ease;
+  }
+  .balance-figure.spend-c{color:var(--spend);}
+  .balance-figure.save-c{color:var(--save);}
+  .balance-sub{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.7rem;
+    color:var(--text-muted);
+    margin-top:2px;
+  }
+  .meter-bar{
+    flex:1 1 220px;
+    height:14px;
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    border-radius:7px;
+    overflow:hidden;
+    min-width:180px;
+  }
+  .meter-fill{
+    height:100%;
+    width:60%;
+    background:linear-gradient(90deg, var(--spend), var(--save));
+    transition:width 0.6s ease;
+  }
+
+  /* graph */
+  .graph-box{
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    border-radius:8px;
+    padding:10px;
+    margin-bottom:6px;
+  }
+  canvas{width:100%;height:auto;display:block;}
+  .graph-caption{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.65rem;
+    color:var(--text-muted);
+    margin-top:6px;
+  }
+
+  /* buttons */
+  .ctrl-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:16px;margin-bottom:6px;}
+  button.action{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.78rem;
+    background:transparent;
+    border:1px solid var(--panel-line);
+    color:var(--text-primary);
+    padding:10px 16px;
+    border-radius:6px;
+    cursor:pointer;
+    transition:border-color 0.2s ease, opacity 0.2s ease;
+  }
+  button.action:hover:not(:disabled){border-color:var(--text-primary);}
+  button.action.b-spend{border-color:var(--spend-dim);}
+  button.action.b-spend:hover{border-color:var(--spend);}
+  button.action.b-save{border-color:var(--save-dim);}
+  button.action.b-save:hover{border-color:var(--save);}
+  button.action.b-reset{opacity:0.7;font-size:0.72rem;}
+
+  .feedback{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.75rem;
+    color:var(--text-muted);
+    min-height:34px;
+    margin-top:10px;
+    max-width:56ch;
+  }
+
+  .bridge{
+    text-align:center;
+    color:var(--text-muted);
+    font-size:0.88rem;
+    max-width:56ch;
+    margin:0 auto;
+  }
+  .bridge strong{color:var(--text-primary);}
+
+  footer{
+    margin-top:8px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.68rem;
+    color:var(--text-muted);
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+<div class="wrap" id="stage">
+
+  <div class="console-header">
+    <h1>Dopamine 101: The Bank</h1>
+    <span class="tag">dopamine basics // hack zone experiment 03</span>
+  </div>
+
+  <p class="intro">
+    Before we get into how to use it, here's the short version of what dopamine actually is —
+    and a simple mental model that makes the rest of it click.
+  </p>
+
+  <div class="panel explain">
+    <h2>01 — WHAT DOPAMINE ACTUALLY DOES</h2>
+    <p>Dopamine isn't really the "feel good" chemical. It's more like your brain's <strong>motivation signal</strong> — it's what makes something feel worth the effort of going after.</p>
+    <p>It's why you can want something you don't even enjoy that much once you get it, and why a total lack of it — boredom — can make even easy things feel unbearable to start. Dopamine is less about pleasure and more about <strong>drive</strong>.</p>
+  </div>
+
+  <div class="panel">
+    <h2>02 — THE DOPAMINE BANK</h2>
+    <p style="margin:0 0 16px;font-size:0.96rem;">Picture your dopamine system like a <strong>bank account</strong>. Fast, easy, high-intensity hits — scrolling, sugar, games — are big withdrawals: a quick spike, then a dip below where you started, paid for later as low motivation, restlessness, or needing an even bigger hit next time. Slower, effortful stuff — a workout, real focus, a hard conversation — barely feels like anything in the moment, but it's a deposit: it raises what you have to work with later.</p>
+
+    <div class="balance-row">
+      <div>
+        <div class="balance-figure" id="balFigure">60</div>
+        <div class="balance-sub">reserve / 100</div>
+      </div>
+      <div class="meter-bar"><div class="meter-fill" id="meterFill"></div></div>
+    </div>
+
+    <div class="graph-box">
+      <canvas id="graph" width="800" height="200"></canvas>
+    </div>
+    <div class="graph-caption">Your balance over this session. Spend fast, and watch what happens to the line.</div>
+
+    <div class="ctrl-row">
+      <button class="action b-spend" id="spendBtn">Take a quick hit (spend)</button>
+      <button class="action b-save" id="saveBtn">Do a hard thing (save)</button>
+    </div>
+    <div class="ctrl-row">
+      <button class="action b-reset" id="resetBtn">Reset</button>
+    </div>
+    <div class="feedback" id="feedback">Try a few of each and watch where the balance ends up.</div>
+  </div>
+
+  <div class="panel">
+    <p class="bridge">That's the whole idea: <strong>what you spend on now is what you have to work with later.</strong> Next up — a simulator for actually using this to get through hard, boring, or effortful things on purpose.</p>
+  </div>
+
+  <footer>Simulated data for teaching purposes — not a medical device.</footer>
+</div>
+
+<script>
+(function(){
+  const canvas = document.getElementById('graph');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const padL = 30, padR = 12, padT = 12, padB = 20;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const WINDOW = 18;
+  const yMin = 0, yMax = 100;
+
+  const balFigure = document.getElementById('balFigure');
+  const meterFill = document.getElementById('meterFill');
+  const feedback = document.getElementById('feedback');
+  const spendBtn = document.getElementById('spendBtn');
+  const saveBtn = document.getElementById('saveBtn');
+  const resetBtn = document.getElementById('resetBtn');
+
+  const START_BAL = 60;
+  let baseline = START_BAL;      // slow-moving underlying capacity
+  let events = [];               // temporary bumps: {t, amp, sigma}
+  let history = [[0, START_BAL]];// [time, baseline] steps for the plotted line
+  let spendStreak = 0;
+  let startTs = null;
+  let simTime = 0;
+  let rafId = null;
+
+  function gaussian(t, mu, sigma){
+    return Math.exp(-0.5 * Math.pow((t - mu) / sigma, 2));
+  }
+
+  function baselineAt(t){
+    // step function using recorded history
+    let v = START_BAL;
+    for(const [ht, hv] of history){
+      if(ht <= t) v = hv; else break;
+    }
+    return v;
+  }
+
+  function valueAt(t){
+    let v = baselineAt(t);
+    for(const e of events){
+      v += e.amp * gaussian(t, e.t, e.sigma);
+    }
+    return Math.max(yMin, Math.min(yMax, v));
+  }
+
+  function xForTime(t){
+    const tMin = simTime - WINDOW;
+    return padL + ((t - tMin) / WINDOW) * plotW;
+  }
+  function yForValue(v){ return padT + plotH - ((v - yMin) / (yMax - yMin)) * plotH; }
+
+  function drawGrid(){
+    ctx.clearRect(0,0,W,H);
+    ctx.font = '11px IBM Plex Mono, monospace';
+    ctx.fillStyle = '#63737B';
+    [0,50,100].forEach(v => {
+      const y = yForValue(v);
+      ctx.strokeStyle = '#171F26';
+      ctx.beginPath();
+      ctx.moveTo(padL, y);
+      ctx.lineTo(W - padR, y);
+      ctx.stroke();
+      ctx.fillText(v, 4, y + 4);
+    });
+  }
+
+  function drawCurve(){
+    const tMin = simTime - WINDOW;
+    const step = WINDOW / 240;
+    let pts = [];
+    for(let t = tMin; t <= simTime; t += step){
+      pts.push([xForTime(t), yForValue(valueAt(t))]);
+    }
+    if(pts.length < 2) return;
+
+    const bal = valueAt(simTime);
+    const lineColor = bal >= START_BAL ? '#2DD4BF' : (bal < START_BAL - 15 ? '#FB923C' : '#8FA0A8');
+
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i][0], pts[i][1]);
+    ctx.strokeStyle = lineColor;
+    ctx.lineWidth = 2.2;
+    ctx.stroke();
+
+    const last = pts[pts.length-1];
+    ctx.beginPath();
+    ctx.arc(last[0], last[1], 4.5, 0, Math.PI*2);
+    ctx.fillStyle = lineColor;
+    ctx.fill();
+  }
+
+  function updateReadouts(){
+    const v = valueAt(simTime);
+    balFigure.textContent = Math.round(v);
+    meterFill.style.width = Math.max(4, Math.min(100, v)) + '%';
+    let cls = '';
+    if(v > START_BAL + 5) cls = 'save-c';
+    else if(v < START_BAL - 5) cls = 'spend-c';
+    balFigure.className = 'balance-figure ' + cls;
+  }
+
+  function render(){
+    drawGrid();
+    drawCurve();
+    updateReadouts();
+  }
+
+  function tick(ts){
+    if(startTs === null) startTs = ts;
+    simTime = (ts - startTs) / 1000;
+    render();
+    rafId = requestAnimationFrame(tick);
+  }
+
+  spendBtn.addEventListener('click', () => {
+    spendStreak++;
+    saveStreakReset();
+    const curBal = baselineAt(simTime);
+    // quick spike then a dip below the new (lowered) baseline
+    events.push({t: simTime, amp: 22, sigma: 0.6});
+    events.push({t: simTime + 1.1, amp: -14 - spendStreak*2, sigma: 1.3});
+    const drop = Math.min(6, 2 + spendStreak);
+    const newBal = Math.max(10, curBal - drop);
+    history.push([simTime + 0.05, newBal]);
+
+    if(spendStreak === 1){
+      feedback.textContent = "Quick spike, then a dip — that's normal for one hit.";
+    } else if(spendStreak < 4){
+      feedback.textContent = "Balance is drifting down. Each hit is borrowing a little more against later.";
+    } else {
+      feedback.textContent = "This is the pattern behind a 'dead' feeling after a long scroll session — not tired, just overdrawn.";
+    }
+  });
+
+  saveBtn.addEventListener('click', () => {
+    saveStreak++;
+    spendStreak = 0;
+    const curBal = baselineAt(simTime);
+    events.push({t: simTime, amp: 6, sigma: 1.4});
+    const gain = Math.min(5, 2 + Math.floor(saveStreak/2));
+    const newBal = Math.min(95, curBal + gain);
+    history.push([simTime + 0.05, newBal]);
+
+    if(saveStreak === 1){
+      feedback.textContent = "Barely felt like anything, right? That's normal — deposits are quiet.";
+    } else if(saveStreak < 4){
+      feedback.textContent = "Balance is climbing. This is what building capacity actually looks like — undramatic.";
+    } else {
+      feedback.textContent = "Higher reserve means more to draw on next time something's hard.";
+    }
+  });
+
+  let saveStreak = 0;
+  function saveStreakReset(){ saveStreak = 0; }
+
+  resetBtn.addEventListener('click', () => {
+    baseline = START_BAL;
+    events = [];
+    history = [[simTime, START_BAL]];
+    spendStreak = 0;
+    saveStreak = 0;
+    feedback.textContent = "Reset. Try a few of each and watch where the balance ends up.";
+  });
+
+  rafId = requestAnimationFrame(tick);
+})();
+</script>
+
+</body>
+</html>

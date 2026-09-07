@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Reactivity Dial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#0F1417;
+    --panel:#161D22;
+    --panel-line:#26323A;
+    --text-primary:#E8EDF0;
+    --text-muted:#8FA0A8;
+    --arousal:#FB923C;
+    --arousal-dim:#5A3B22;
+    --control:#60A5FA;
+    --control-dim:#1E3A5F;
+    --calm:#2DD4BF;
+    --calm-dim:#164A44;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg-deep);
+    color:var(--text-primary);
+    font-family:'IBM Plex Sans',sans-serif;
+    line-height:1.55;
+    padding:28px 16px 60px;
+  }
+  .wrap{max-width:760px;margin:0 auto;}
+
+  .console-header{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    border-bottom:1px solid var(--panel-line);
+    padding-bottom:14px;
+    margin-bottom:6px;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .console-header h1{font-size:1.5rem;margin:0;font-weight:700;letter-spacing:-0.01em;}
+  .console-header .tag{font-family:'IBM Plex Mono',monospace;font-size:0.72rem;color:var(--text-muted);}
+
+  .intro{color:var(--text-muted);font-size:0.98rem;max-width:64ch;margin:14px 0 28px;}
+  .intro strong{color:var(--text-primary);font-weight:600;}
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    border-radius:10px;
+    padding:22px;
+    margin-bottom:22px;
+  }
+  .panel h2{
+    font-size:0.78rem;
+    font-family:'IBM Plex Mono',monospace;
+    color:var(--text-muted);
+    margin:0 0 16px;
+    font-weight:500;
+    letter-spacing:0.02em;
+  }
+
+  .explain p{margin:0 0 12px;font-size:0.96rem;}
+  .explain p:last-child{margin-bottom:0;}
+
+  /* seg / hack rows */
+  .seg-row, .hack-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+  .seg-btn, .hack-btn{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.76rem;
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    color:var(--text-muted);
+    padding:10px 14px;
+    border-radius:6px;
+    cursor:pointer;
+    transition:border-color 0.2s ease,color 0.2s ease;
+  }
+  .seg-btn:hover{border-color:var(--arousal);color:var(--text-primary);}
+  .hack-btn.h-breathe:hover{border-color:var(--calm);color:var(--text-primary);}
+  .hack-btn.h-reappraise:hover{border-color:var(--control);color:var(--text-primary);}
+  .hack-btn.h-distance:hover{border-color:var(--control);color:var(--text-primary);}
+
+  .row-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.65rem;
+    color:var(--text-muted);
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    margin-bottom:8px;
+  }
+
+  /* readouts */
+  .readouts{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+    gap:12px;
+    margin-bottom:18px;
+  }
+  .readout{
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    border-radius:8px;
+    padding:12px 14px;
+  }
+  .readout .label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.65rem;
+    color:var(--text-muted);
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+  }
+  .readout .value{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:1.3rem;
+    font-weight:600;
+    margin-top:4px;
+    color:var(--text-primary);
+    transition:color 0.3s ease;
+  }
+  .readout .value.arousal-c{color:var(--arousal);}
+  .readout .value.control-c{color:var(--control);}
+  .readout .value.calm-c{color:var(--calm);}
+
+  /* graph */
+  .graph-box{
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    border-radius:8px;
+    padding:10px;
+    margin-bottom:6px;
+  }
+  canvas{width:100%;height:auto;display:block;}
+  .legend{
+    display:flex;
+    gap:16px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.68rem;
+    color:var(--text-muted);
+    margin-top:8px;
+  }
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .swatch{width:10px;height:10px;border-radius:2px;display:inline-block;}
+
+  .graph-caption{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.65rem;
+    color:var(--text-muted);
+    margin-top:6px;
+  }
+
+  .feedback{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.75rem;
+    color:var(--text-muted);
+    min-height:34px;
+    margin-top:14px;
+    max-width:60ch;
+  }
+
+  .ctrl-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:6px;}
+  button.action{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.74rem;
+    background:transparent;
+    border:1px solid var(--panel-line);
+    color:var(--text-primary);
+    padding:8px 14px;
+    border-radius:6px;
+    cursor:pointer;
+    transition:border-color 0.2s ease, opacity 0.2s ease;
+  }
+  button.action:hover{border-color:var(--text-primary);}
+
+  /* diagram */
+  .diagram-row{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;}
+  .diagram-box{
+    flex:0 0 220px;
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    border-radius:8px;
+    padding:14px;
+  }
+  .diagram-box svg{width:100%;height:auto;display:block;}
+  .d-path{fill:none;stroke:#3A4750;stroke-width:2.6;stroke-linecap:round;transition:stroke 0.5s ease;}
+  .d-path.active-fast{stroke:var(--arousal);}
+  .d-path.active-pfc{stroke:var(--control);}
+  .d-path.blocked-pfc{stroke:var(--arousal-dim);stroke-dasharray:4 4;}
+  .d-path.active-vagus{stroke:var(--calm);}
+  .d-node{fill:#3A4750;transition:fill 0.5s ease;}
+  .d-node.lit-amyg{fill:var(--arousal);}
+  .d-node.lit-pfc{fill:var(--control);}
+  .d-node.lit-body{fill:var(--calm);}
+  .d-label{font-family:'IBM Plex Mono',monospace;font-size:7.5px;fill:var(--text-muted);}
+
+  .diagram-notes{flex:1 1 220px;min-width:220px;}
+  .diagram-notes ul{margin:0;padding-left:18px;}
+  .diagram-notes li{margin-bottom:8px;font-size:0.92rem;}
+  .diagram-notes li span{
+    display:block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.68rem;
+    color:var(--text-muted);
+    margin-top:2px;
+  }
+
+  .callout{
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    border-left:3px solid var(--calm);
+    border-radius:6px;
+    padding:12px 14px;
+    font-size:0.9rem;
+    color:var(--text-muted);
+    margin-top:14px;
+  }
+  .callout strong{color:var(--text-primary);}
+
+  footer{
+    margin-top:8px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.68rem;
+    color:var(--text-muted);
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+<div class="wrap" id="stage">
+
+  <div class="console-header">
+    <h1>The Reactivity Dial</h1>
+    <span class="tag">emotional regulation // hack zone experiment 05</span>
+  </div>
+
+  <p class="intro">
+    Same nervous system, new situation: instead of a hard task, it's an annoying person or a frustrating moment.
+    The tools are physiological and cognitive, and they work in a specific order — not all of them work equally
+    well at every arousal level.
+  </p>
+
+  <div class="panel explain">
+    <h2>01 — WHAT'S ACTUALLY HAPPENING</h2>
+    <p>Something annoying happens and your <strong>amygdala</strong> flags it as a threat before you've consciously thought anything. That fires off a fast body-wide arousal response — heart rate up, cortisol up.</p>
+    <p>Your <strong>prefrontal cortex</strong> is what normally reasons, reframes, and reins that in. But it's chemically sensitive to arousal — past a certain point it partially goes offline, and control shifts to faster, more reflexive systems. That's the biology behind "I couldn't think straight, I just reacted."</p>
+    <div class="callout" style="border-left-color:var(--control);"><strong>What "reappraisal" actually means:</strong> deliberately reinterpreting what a situation means, not denying or hiding how you feel about it. Someone snaps at you — the default read is "they're attacking me" (anger). A reappraisal is "they're stressed about something else and I caught the overflow" — same event, different meaning, and the anger drops because the emotion follows the interpretation, not the raw event. It's not suppression (hiding the feeling) and it's not denial (pretending it didn't happen) — it's genuinely re-reading the situation from a true but different angle.</div>
+  </div>
+
+  <div class="panel">
+    <h2>02 — LIVE REACTIVITY SIMULATOR</h2>
+
+    <div class="row-label">Trigger a scenario</div>
+    <div class="seg-row" id="triggerRow">
+      <button class="seg-btn" data-scn="comment">Annoying comment</button>
+      <button class="seg-btn" data-scn="interrupt">Interrupted again</button>
+      <button class="seg-btn" data-scn="blame">Unfair blame</button>
+    </div>
+
+    <div class="row-label">Apply a technique</div>
+    <div class="hack-row">
+      <button class="hack-btn h-breathe" id="breatheBtn" title="Slow, extended-exhale breathing — works on the body directly, no thinking required.">Breathe (vagal brake)</button>
+      <button class="hack-btn h-reappraise" id="reappraiseBtn" title="Reinterpret what the situation means, without denying what happened. E.g. 'they're stressed, not attacking me.'">Reappraise</button>
+      <button class="hack-btn h-distance" id="distanceBtn" title="Mentally step back and refer to yourself in third person — creates enough distance to reason instead of react.">Name it &amp; step back</button>
+    </div>
+    <div class="graph-caption" style="margin:-8px 0 14px;">Hover a technique for what it actually means.</div>
+
+    <div class="readouts">
+      <div class="readout"><div class="label">Arousal</div><div class="value" id="arVal">15</div></div>
+      <div class="readout"><div class="label">PFC control</div><div class="value" id="pfcVal">85</div></div>
+      <div class="readout"><div class="label">State</div><div class="value" id="stVal">Calm</div></div>
+    </div>
+
+    <div class="graph-box">
+      <canvas id="graph" width="800" height="220"></canvas>
+    </div>
+    <div class="legend">
+      <span><span class="swatch" style="background:var(--arousal);"></span>Arousal</span>
+      <span><span class="swatch" style="background:var(--control);"></span>PFC control</span>
+    </div>
+    <div class="graph-caption">Trigger a scenario, then try a technique. Notice that reappraisal barely works while arousal is high — breathing works regardless.</div>
+
+    <div class="feedback" id="feedback">Pick a scenario to start.</div>
+
+    <div class="ctrl-row">
+      <button class="action" id="resetBtn">Reset session</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>03 — WHERE IT HAPPENS</h2>
+    <div class="diagram-row">
+      <div class="diagram-box">
+        <svg viewBox="0 0 200 150">
+          <path class="d-path" id="pathFast" d="M60,40 Q100,55 140,105"/>
+          <path class="d-path" id="pathPfc" d="M60,40 Q40,90 90,118 Q115,128 140,105"/>
+          <path class="d-path" id="pathVagus" d="M140,105 Q160,60 100,30 Q80,22 60,40" stroke-dasharray="0"/>
+          <circle class="d-node" id="nodeAmyg" cx="60" cy="40" r="9"/>
+          <circle class="d-node" id="nodePfc" cx="80" cy="115" r="9"/>
+          <circle class="d-node" id="nodeBody" cx="140" cy="105" r="9"/>
+          <text class="d-label" x="30" y="28">Amygdala</text>
+          <text class="d-label" x="55" y="140">Prefrontal cortex</text>
+          <text class="d-label" x="128" y="95">Body / vagus</text>
+        </svg>
+      </div>
+      <div class="diagram-notes">
+        <ul>
+          <li>Amygdala &rarr; body <span>the fast, reflexive alarm path — fires first, no thinking required</span></li>
+          <li>Prefrontal cortex &rarr; amygdala <span>the reasoning brake — reappraisal and self-distancing run through here, but it can be too flooded to work</span></li>
+          <li>Body &rarr; brain (vagus) <span>the physical brake — breath control works on this path directly, bypassing the need for the PFC to be online at all</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel explain">
+    <h2>04 — THE TRAINING PART</h2>
+    <p>Notice how a scenario you've already survived once tends to spike a little less the second time. That's not random — each time you get exposed to a trigger and make it back to baseline, your amygdala's threat prediction updates a little. It's called extinction learning, and it only happens through direct, repeated, survivable exposure — never through avoiding the trigger entirely.</p>
+    <div class="callout"><strong>The order matters more than the tool.</strong> Breath first, because it works no matter how flooded you are. Reappraisal and self-distancing second, once arousal is low enough for the prefrontal cortex to actually be back online. Trying to "just think differently" while still spiking is why that advice so often fails in the moment — it's not weak willpower, it's asking an offline system to do the job.</div>
+  </div>
+
+  <footer>Simulated data for teaching purposes — not medical or psychological advice.</footer>
+</div>
+
+<script>
+(function(){
+  const canvas = document.getElementById('graph');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const padL = 30, padR = 12, padT = 12, padB = 20;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const WINDOW = 20;
+  const yMin = 0, yMax = 100;
+  const BASE_AROUSAL = 15;
+
+  const triggerRow = document.getElementById('triggerRow');
+  const breatheBtn = document.getElementById('breatheBtn');
+  const reappraiseBtn = document.getElementById('reappraiseBtn');
+  const distanceBtn = document.getElementById('distanceBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const arVal = document.getElementById('arVal');
+  const pfcVal = document.getElementById('pfcVal');
+  const stVal = document.getElementById('stVal');
+  const feedback = document.getElementById('feedback');
+
+  const pathFast = document.getElementById('pathFast');
+  const pathPfc = document.getElementById('pathPfc');
+  const pathVagus = document.getElementById('pathVagus');
+  const nodeAmyg = document.getElementById('nodeAmyg');
+  const nodePfc = document.getElementById('nodePfc');
+  const nodeBody = document.getElementById('nodeBody');
+
+  const SCENARIOS = {
+    comment:   {label:'Annoying comment', base: 55},
+    interrupt: {label:'Interrupted again', base: 65},
+    blame:     {label:'Unfair blame',      base: 78},
+  };
+  let masteryCount = {comment:0, interrupt:0, blame:0};
+  let recoveredSinceTrigger = true;
+
+  let arousal = BASE_AROUSAL;
+  let history = [[0, BASE_AROUSAL]];
+  let startTs = null;
+  let simTime = 0;
+  let rafId = null;
+
+  function pfcFromArousal(a){
+    return Math.max(5, Math.min(95, 100 - a * 0.95));
+  }
+
+  function xForTime(t){
+    const tMin = Math.max(0, simTime - WINDOW);
+    return padL + ((t - tMin) / WINDOW) * plotW;
+  }
+  function yForValue(v){ return padT + plotH - ((v - yMin) / (yMax - yMin)) * plotH; }
+
+  function drawGrid(){
+    ctx.clearRect(0,0,W,H);
+    ctx.font = '11px IBM Plex Mono, monospace';
+    ctx.fillStyle = '#63737B';
+    [0,50,100].forEach(v=>{
+      const y = yForValue(v);
+      ctx.strokeStyle = '#171F26';
+      ctx.beginPath();
+      ctx.moveTo(padL, y);
+      ctx.lineTo(W - padR, y);
+      ctx.stroke();
+      ctx.fillText(v, 4, y+4);
+    });
+  }
+
+  function trimmedHistory(){
+    const tMin = Math.max(0, simTime - WINDOW);
+    return history.filter(p => p[0] >= tMin - 1);
+  }
+
+  function drawSeries(getVal, color){
+    const pts = trimmedHistory().map(p => [xForTime(p[0]), yForValue(getVal(p))]);
+    if(pts.length < 2) return;
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i][0], pts[i][1]);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2.2;
+    ctx.stroke();
+    const last = pts[pts.length-1];
+    ctx.beginPath();
+    ctx.arc(last[0], last[1], 4, 0, Math.PI*2);
+    ctx.fillStyle = color;
+    ctx.fill();
+  }
+
+  function render(){
+    drawGrid();
+    drawSeries(p => p[1], '#FB923C');
+    drawSeries(p => pfcFromArousal(p[1]), '#60A5FA');
+  }
+
+  function updateReadouts(){
+    const pfc = pfcFromArousal(arousal);
+    arVal.textContent = Math.round(arousal);
+    arVal.className = 'value ' + (arousal > 55 ? 'arousal-c' : (arousal < 25 ? 'calm-c' : ''));
+    pfcVal.textContent = Math.round(pfc);
+    pfcVal.className = 'value ' + (pfc > 65 ? 'control-c' : (pfc < 35 ? 'arousal-c' : ''));
+    let state = 'Calm';
+    if(arousal > 65) state = 'Flooded';
+    else if(arousal > 35) state = 'Regulating';
+    stVal.textContent = state;
+  }
+
+  function pushHistory(){ history.push([simTime, arousal]); }
+
+  function tick(ts){
+    if(startTs === null) startTs = ts;
+    simTime = (ts - startTs) / 1000;
+    // slow passive decay toward baseline
+    arousal += (BASE_AROUSAL - arousal) * 0.006;
+    arousal = Math.max(0, Math.min(100, arousal));
+    if(Math.floor(simTime*4) !== Math.floor((simTime-0.016)*4)) pushHistory();
+    if(arousal < 25) recoveredSinceTrigger = true;
+    render();
+    updateReadouts();
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function lightPath(el, cls, ms){
+    el.classList.add(cls);
+    setTimeout(()=>el.classList.remove(cls), ms || 1200);
+  }
+  function lightNode(el, cls, ms){
+    el.classList.add(cls);
+    setTimeout(()=>el.classList.remove(cls), ms || 1200);
+  }
+
+  triggerRow.querySelectorAll('.seg-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const key = btn.dataset.scn;
+      const scn = SCENARIOS[key];
+      const reduction = Math.min(20, masteryCount[key] * 5);
+      const magnitude = Math.max(30, scn.base - reduction);
+      const wasFamiliar = masteryCount[key] > 0;
+      arousal = Math.min(100, arousal + magnitude);
+      pushHistory();
+      lightPath(pathFast, 'active-fast', 900);
+      lightNode(nodeAmyg, 'lit-amyg', 900);
+      lightNode(nodeBody, 'lit-body', 900);
+      recoveredSinceTrigger = false;
+      if(wasFamiliar && reduction > 0){
+        feedback.textContent = scn.label + ' hit for ' + Math.round(magnitude) + ' — a bit less than the first time. The amygdala is updating its prediction.';
+      } else {
+        feedback.textContent = scn.label + ' just spiked your arousal to ' + Math.round(arousal) + '. Try breathing first.';
+      }
+    });
+  });
+
+  breatheBtn.addEventListener('click', ()=>{
+    arousal = Math.max(0, arousal - 20);
+    pushHistory();
+    lightPath(pathVagus, 'active-vagus', 1400);
+    lightNode(nodeBody, 'lit-body', 1400);
+    feedback.textContent = 'Breath works on the body directly — it drops arousal regardless of how flooded you are.';
+  });
+
+  function tryPfcTechnique(name, strongDrop, weakDrop){
+    const effective = arousal < 55;
+    const drop = effective ? strongDrop : weakDrop;
+    arousal = Math.max(0, arousal - drop);
+    pushHistory();
+    if(effective){
+      lightPath(pathPfc, 'active-pfc', 1200);
+      lightNode(nodePfc, 'lit-pfc', 1200);
+      feedback.textContent = name + ' worked well — arousal was low enough for the prefrontal cortex to actually engage.';
+    } else {
+      lightPath(pathPfc, 'blocked-pfc', 1200);
+      feedback.textContent = name + ' barely moved the needle — arousal is still too high for that path to do much. Try breathing first.';
+    }
+    if(arousal < 25){
+      const key = lastScenarioKey();
+      if(key && !recoveredSinceTrigger){
+        masteryCount[key] = (masteryCount[key]||0) + 1;
+        recoveredSinceTrigger = true;
+      }
+    }
+  }
+
+  let lastScn = null;
+  triggerRow.querySelectorAll('.seg-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ lastScn = btn.dataset.scn; });
+  });
+  function lastScenarioKey(){ return lastScn; }
+
+  reappraiseBtn.addEventListener('click', ()=>tryPfcTechnique('Reappraisal', 26, 6));
+  distanceBtn.addEventListener('click', ()=>tryPfcTechnique('Naming it / stepping back', 20, 8));
+
+  resetBtn.addEventListener('click', ()=>{
+    arousal = BASE_AROUSAL;
+    history = [[simTime, BASE_AROUSAL]];
+    recoveredSinceTrigger = true;
+    feedback.textContent = 'Session reset. Pick a scenario to start.';
+  });
+
+  rafId = requestAnimationFrame(tick);
+})();
+</script>
+
+</body>
+</html>
