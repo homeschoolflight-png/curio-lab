@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emergency Hack Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#0F1417;
+    --panel:#161D22;
+    --panel-line:#26323A;
+    --text-primary:#E8EDF0;
+    --text-muted:#8FA0A8;
+    --emergency:#FBBF24;
+    --emergency-dim:#5A4A15;
+    --calm:#2DD4BF;
+    --calm-dim:#164A44;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg-deep);
+    color:var(--text-primary);
+    font-family:'IBM Plex Sans',sans-serif;
+    line-height:1.55;
+    padding:24px 16px 60px;
+  }
+  .wrap{max-width:640px;margin:0 auto;}
+
+  .console-header{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    border-bottom:1px solid var(--panel-line);
+    padding-bottom:14px;
+    margin-bottom:6px;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .console-header h1{font-size:1.5rem;margin:0;font-weight:700;letter-spacing:-0.01em;color:var(--emergency);}
+  .console-header .tag{font-family:'IBM Plex Mono',monospace;font-size:0.72rem;color:var(--text-muted);}
+
+  .intro{color:var(--text-muted);font-size:0.98rem;max-width:60ch;margin:14px 0 24px;}
+  .intro strong{color:var(--text-primary);font-weight:600;}
+
+  .rate-strip{
+    background:var(--panel);
+    border:1px solid var(--emergency-dim);
+    border-radius:10px;
+    padding:16px 18px;
+    margin-bottom:22px;
+  }
+  .rate-strip .row-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.7rem;
+    color:var(--text-muted);
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    margin-bottom:10px;
+  }
+  .rate-scale{display:flex;gap:6px;flex-wrap:wrap;}
+  .rate-btn{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.78rem;
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    color:var(--text-muted);
+    width:34px;height:34px;
+    border-radius:6px;
+    cursor:pointer;
+    transition:border-color 0.2s ease,color 0.2s ease;
+  }
+  .rate-btn.active{border-color:var(--emergency);color:var(--text-primary);}
+
+  .cards{display:flex;flex-direction:column;gap:12px;}
+  .card{
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    border-radius:10px;
+    overflow:hidden;
+  }
+  .card-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:16px 18px;
+    cursor:pointer;
+    user-select:none;
+  }
+  .card-head:hover{background:#1B242B;}
+  .card-title{font-size:1.02rem;font-weight:600;color:var(--text-primary);}
+  .card-tagline{font-size:0.85rem;color:var(--text-muted);margin-top:2px;}
+  .card-meta{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.68rem;
+    color:var(--text-muted);
+    white-space:nowrap;
+    flex:0 0 auto;
+  }
+  .chevron{
+    flex:0 0 auto;
+    font-family:'IBM Plex Mono',monospace;
+    color:var(--emergency);
+    transition:transform 0.25s ease;
+    font-size:0.9rem;
+  }
+  .card.open .chevron{transform:rotate(90deg);}
+
+  .card-body{
+    max-height:0;
+    overflow:hidden;
+    transition:max-height 0.3s ease;
+  }
+  .card.open .card-body{max-height:600px;}
+  .card-body-inner{
+    padding:0 18px 18px;
+    border-top:1px solid var(--panel-line);
+    padding-top:14px;
+  }
+  .steps{margin:0;padding-left:0;list-style:none;}
+  .steps li{
+    display:flex;
+    gap:10px;
+    margin-bottom:10px;
+    align-items:flex-start;
+    font-size:0.92rem;
+    color:var(--text-muted);
+  }
+  .steps li:last-child{margin-bottom:0;}
+  .steps .num{
+    flex:0 0 auto;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.72rem;
+    color:var(--emergency);
+    border:1px solid var(--emergency-dim);
+    border-radius:5px;
+    width:20px;height:20px;
+    display:flex;align-items:center;justify-content:center;
+    margin-top:1px;
+  }
+
+  .start-btn{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.76rem;
+    background:transparent;
+    border:1px solid var(--emergency-dim);
+    color:var(--emergency);
+    padding:9px 14px;
+    border-radius:6px;
+    cursor:pointer;
+    margin-top:14px;
+    transition:border-color 0.2s ease, background 0.2s ease;
+  }
+  .start-btn:hover{border-color:var(--emergency);background:rgba(251,191,36,0.08);}
+
+  .timer-readout{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:1.4rem;
+    font-weight:600;
+    color:var(--emergency);
+    margin-top:10px;
+    display:none;
+  }
+  .timer-readout.show{display:block;}
+
+  footer{
+    margin-top:24px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.68rem;
+    color:var(--text-muted);
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="console-header">
+    <h1>⚡ Emergency Hack Toolkit</h1>
+    <span class="tag">tap one, follow it, right now</span>
+  </div>
+
+  <p class="intro">
+    Don't scroll and think — <strong>pick the first one that sounds doable</strong> and follow the steps.
+    Every technique here takes under 5 minutes and needs nothing you don't already have.
+  </p>
+
+  <div class="rate-strip">
+    <div class="row-label">How keyed-up or annoyed do you feel right now?</div>
+    <div class="rate-scale" id="rateScale">
+      <!-- filled by JS 1-10 -->
+    </div>
+  </div>
+
+  <div class="cards" id="cardList">
+
+    <div class="card" data-time="30s">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Physiological Sigh</div>
+          <div class="card-tagline">Two quick inhales through your nose, one long exhale through your mouth.</div>
+        </div>
+        <div class="card-meta">~30 sec</div>
+        <div class="chevron">▶</div>
+      </div>
+      <div class="card-body">
+        <div class="card-body-inner">
+          <ol class="steps">
+            <li><span class="num">1</span>Inhale deeply through your nose.</li>
+            <li><span class="num">2</span>Without exhaling, sip in a second small inhale through your nose on top of the first.</li>
+            <li><span class="num">3</span>Exhale slowly and fully through your mouth until your lungs feel empty.</li>
+            <li><span class="num">4</span>Repeat for up to 3 cycles.</li>
+          </ol>
+          <button class="start-btn" data-duration="30">Start 30-second timer</button>
+          <div class="timer-readout">30</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" data-time="30s">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Cold Water Reset</div>
+          <div class="card-tagline">Cold on the face triggers a reflex that slows your heart rate fast.</div>
+        </div>
+        <div class="card-meta">~30 sec</div>
+        <div class="chevron">▶</div>
+      </div>
+      <div class="card-body">
+        <div class="card-body-inner">
+          <ol class="steps">
+            <li><span class="num">1</span>Get to cold water, a cold pack, or even a cold can/bottle.</li>
+            <li><span class="num">2</span>Press it firmly against your cheeks and forehead, or splash your face.</li>
+            <li><span class="num">3</span>Hold for 15 to 30 seconds.</li>
+          </ol>
+          <button class="start-btn" data-duration="30">Start 30-second timer</button>
+          <div class="timer-readout">30</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" data-time="2 min">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Butterfly Hug</div>
+          <div class="card-tagline">Cross your arms, alternate tapping your shoulders — no device needed.</div>
+        </div>
+        <div class="card-meta">~2 min</div>
+        <div class="chevron">▶</div>
+      </div>
+      <div class="card-body">
+        <div class="card-body-inner">
+          <ol class="steps">
+            <li><span class="num">1</span>Cross your arms over your chest, hands resting on opposite shoulders.</li>
+            <li><span class="num">2</span>Alternate gently tapping your left hand, then your right hand, at a slow steady pace.</li>
+            <li><span class="num">3</span>Keep going for 2 to 3 minutes.</li>
+          </ol>
+          <button class="start-btn" data-duration="120">Start 2-minute timer</button>
+          <div class="timer-readout">120</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" data-time="1 min">
+      <div class="card-head">
+        <div>
+          <div class="card-title">5-4-3-2-1 Grounding</div>
+          <div class="card-tagline">Name things you can see, feel, hear, smell, and taste.</div>
+        </div>
+        <div class="card-meta">~1 min</div>
+        <div class="chevron">▶</div>
+      </div>
+      <div class="card-body">
+        <div class="card-body-inner">
+          <ol class="steps">
+            <li><span class="num">1</span>Name 5 things you can see around you.</li>
+            <li><span class="num">2</span>Name 4 things you can physically feel.</li>
+            <li><span class="num">3</span>Name 3 things you can hear.</li>
+            <li><span class="num">4</span>Name 2 things you can smell.</li>
+            <li><span class="num">5</span>Name 1 thing you can taste.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" data-time="1 min">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Grounding Object</div>
+          <div class="card-tagline">Hold something textured and focus only on it.</div>
+        </div>
+        <div class="card-meta">~1 min</div>
+        <div class="chevron">▶</div>
+      </div>
+      <div class="card-body">
+        <div class="card-body-inner">
+          <ol class="steps">
+            <li><span class="num">1</span>Grab any small object near you — a coin, your keys, a piece of fabric.</li>
+            <li><span class="num">2</span>Hold it and notice only its texture, weight, and temperature.</li>
+            <li><span class="num">3</span>When your mind wanders, gently bring it back to the object.</li>
+          </ol>
+          <button class="start-btn" data-duration="60">Start 1-minute timer</button>
+          <div class="timer-readout">60</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" data-time="1 min">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Count Backwards by 5s</div>
+          <div class="card-tagline">Force your logical brain online — it can't spiral and count at the same time.</div>
+        </div>
+        <div class="card-meta">~1 min</div>
+        <div class="chevron">▶</div>
+      </div>
+      <div class="card-body">
+        <div class="card-body-inner">
+          <ol class="steps">
+            <li><span class="num">1</span>Pick a number between 90 and 100.</li>
+            <li><span class="num">2</span>Count backwards from it by 5s out loud (100, 95, 90...).</li>
+            <li><span class="num">3</span>If you lose track, that's fine — just pick up and keep going for about a minute.</li>
+          </ol>
+          <button class="start-btn" data-duration="60">Start 1-minute timer</button>
+          <div class="timer-readout">60</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" data-time="1 min">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Categorize the Room</div>
+          <div class="card-tagline">Sort everything you see into a category — same logical-brain trick, no counting required.</div>
+        </div>
+        <div class="card-meta">~1 min</div>
+        <div class="chevron">▶</div>
+      </div>
+      <div class="card-body">
+        <div class="card-body-inner">
+          <ol class="steps">
+            <li><span class="num">1</span>Look around the room and pick a category: color, material, size, or shape.</li>
+            <li><span class="num">2</span>Silently sort everything you see into that category.</li>
+            <li><span class="num">3</span>Keep going until you've sorted at least 15 to 20 objects.</li>
+          </ol>
+          <button class="start-btn" data-duration="60">Start 1-minute timer</button>
+          <div class="timer-readout">60</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>Not a substitute for professional support. If you're in crisis, please reach out to a crisis line or someone you trust.</footer>
+</div>
+
+<script>
+(function(){
+  // rating scale 1-10
+  const rateScale = document.getElementById('rateScale');
+  for(let i=1;i<=10;i++){
+    const b = document.createElement('button');
+    b.className = 'rate-btn';
+    b.textContent = i;
+    b.addEventListener('click', ()=>{
+      rateScale.querySelectorAll('.rate-btn').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+    });
+    rateScale.appendChild(b);
+  }
+
+  // accordion cards
+  document.querySelectorAll('.card-head').forEach(head=>{
+    head.addEventListener('click', ()=>{
+      const card = head.parentElement;
+      const wasOpen = card.classList.contains('open');
+      document.querySelectorAll('.card.open').forEach(c=>c.classList.remove('open'));
+      if(!wasOpen) card.classList.add('open');
+    });
+  });
+
+  // per-card countdown timers
+  document.querySelectorAll('.start-btn').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const duration = parseInt(btn.dataset.duration, 10);
+      const readout = btn.nextElementSibling;
+      let remaining = duration;
+      readout.textContent = remaining;
+      readout.classList.add('show');
+      btn.disabled = true;
+      btn.textContent = 'Running…';
+      const iv = setInterval(()=>{
+        remaining--;
+        if(remaining <= 0){
+          clearInterval(iv);
+          readout.textContent = 'Done';
+          btn.disabled = false;
+          btn.textContent = 'Run again';
+        } else {
+          readout.textContent = remaining;
+        }
+      }, 1000);
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
