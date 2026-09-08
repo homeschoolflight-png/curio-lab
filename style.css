@@ -43,7 +43,8 @@ body {
   gap: 10px;
 }
 
-.simulators-btn {
+.simulators-btn,
+.emergency-btn {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -57,7 +58,8 @@ body {
   white-space: nowrap;
 }
 
-.simulators-btn:hover {
+.simulators-btn:hover,
+.emergency-btn:hover {
   opacity: 0.9;
 }
 
