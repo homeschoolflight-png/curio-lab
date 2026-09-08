@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Retrieval vs. Rereading Race</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#0F1417;
+    --panel:#161D22;
+    --panel-line:#26323A;
+    --text-primary:#E8EDF0;
+    --text-muted:#8FA0A8;
+    --reread:#FB923C;
+    --reread-dim:#5A3B22;
+    --retrieve:#60A5FA;
+    --retrieve-dim:#1E3A5F;
+    --calm:#2DD4BF;
+    --calm-dim:#164A44;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg-deep);
+    color:var(--text-primary);
+    font-family:'IBM Plex Sans',sans-serif;
+    line-height:1.55;
+    padding:28px 16px 60px;
+  }
+  .wrap{max-width:760px;margin:0 auto;}
+
+  .console-header{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    border-bottom:1px solid var(--panel-line);
+    padding-bottom:14px;
+    margin-bottom:6px;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .console-header h1{font-size:1.5rem;margin:0;font-weight:700;letter-spacing:-0.01em;}
+  .console-header .tag{font-family:'IBM Plex Mono',monospace;font-size:0.72rem;color:var(--text-muted);}
+
+  .intro{color:var(--text-muted);font-size:0.98rem;max-width:64ch;margin:14px 0 28px;}
+  .intro strong{color:var(--text-primary);font-weight:600;}
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    border-radius:10px;
+    padding:22px;
+    margin-bottom:22px;
+  }
+  .panel h2{
+    font-size:0.78rem;
+    font-family:'IBM Plex Mono',monospace;
+    color:var(--text-muted);
+    margin:0 0 16px;
+    font-weight:500;
+    letter-spacing:0.02em;
+  }
+  .explain p{margin:0 0 12px;font-size:0.96rem;}
+  .explain p:last-child{margin-bottom:0;}
+
+  .row-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.65rem;
+    color:var(--text-muted);
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    margin-bottom:8px;
+  }
+
+  .method-note{
+    font-size:0.86rem;
+    color:var(--text-muted);
+    max-width:58ch;
+    margin:0 0 10px;
+  }
+
+  .hack-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+  .hack-btn{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.76rem;
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    color:var(--text-muted);
+    padding:10px 14px;
+    border-radius:6px;
+    cursor:pointer;
+    transition:border-color 0.2s ease,color 0.2s ease;
+  }
+  .hack-btn.reread-btn:hover{border-color:var(--reread);color:var(--text-primary);}
+  .hack-btn.retrieve-btn:hover{border-color:var(--retrieve);color:var(--text-primary);}
+  .hack-btn:disabled{opacity:0.4;cursor:default;}
+
+  .readouts{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+    gap:12px;
+    margin-bottom:18px;
+  }
+  .readout{
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    border-radius:8px;
+    padding:12px 14px;
+  }
+  .readout .label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.65rem;
+    color:var(--text-muted);
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+  }
+  .readout .value{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:1.3rem;
+    font-weight:600;
+    margin-top:4px;
+    color:var(--text-primary);
+  }
+  .readout .value.reread-c{color:var(--reread);}
+  .readout .value.retrieve-c{color:var(--retrieve);}
+
+  .graph-box{
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    border-radius:8px;
+    padding:10px;
+    margin-bottom:6px;
+  }
+  canvas{width:100%;height:auto;display:block;}
+  .legend{
+    display:flex;
+    gap:16px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.68rem;
+    color:var(--text-muted);
+    margin-top:8px;
+  }
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .swatch{width:10px;height:10px;border-radius:2px;display:inline-block;}
+
+  .graph-caption{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.65rem;
+    color:var(--text-muted);
+    margin-top:6px;
+  }
+
+  .feedback{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.75rem;
+    color:var(--text-muted);
+    min-height:34px;
+    margin-top:14px;
+    max-width:60ch;
+  }
+
+  .ctrl-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:6px;}
+  button.action{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.74rem;
+    background:transparent;
+    border:1px solid var(--panel-line);
+    color:var(--text-primary);
+    padding:8px 14px;
+    border-radius:6px;
+    cursor:pointer;
+    transition:border-color 0.2s ease, opacity 0.2s ease;
+  }
+  button.action:hover{border-color:var(--text-primary);}
+
+  .callout{
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    border-left:3px solid var(--calm);
+    border-radius:6px;
+    padding:12px 14px;
+    font-size:0.9rem;
+    color:var(--text-muted);
+    margin-top:14px;
+  }
+  .callout strong{color:var(--text-primary);}
+
+  footer{
+    margin-top:8px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.68rem;
+    color:var(--text-muted);
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+<div class="wrap" id="stage">
+
+  <div class="console-header">
+    <h1>Retrieval vs. Rereading Race</h1>
+    <span class="tag">memory & learning // hack zone experiment 07</span>
+  </div>
+
+  <p class="intro">
+    Two study strategies, one simulated week. Rereading feels productive right away. Retrieval practice
+    feels harder and less confident in the moment — but watch what happens to each curve as the days
+    without studying pile up.
+  </p>
+
+  <div class="panel explain">
+    <h2>01 — WHAT'S ACTUALLY HAPPENING</h2>
+    <p>Every memory naturally decays over time unless it's reinforced. <strong>Rereading</strong> reinforces a memory passively — you're just re-exposing yourself to the same information, which feels easy because you're recognizing it, not truly recalling it.</p>
+    <p><strong>Retrieval practice</strong> reinforces a memory by making you actively pull it out of storage with no prompt in front of you — closing the book and trying to recall the answer before checking, instead of just reading it again. That effort feels uncomfortable and like it's going worse in the moment — but it's the effort itself that makes the memory trace stronger and much more resistant to decay.</p>
+  </div>
+
+  <div class="panel">
+    <h2>02 — LIVE STUDY SIMULATOR</h2>
+
+    <div class="row-label">Study List A (rereading)</div>
+    <p class="method-note">Just look the list over again, start to finish, the way you'd reread a page of notes.</p>
+    <div class="hack-row">
+      <button class="hack-btn reread-btn" id="rereadBtn">Reread the list</button>
+    </div>
+
+    <div class="row-label">Study List B (retrieval practice)</div>
+    <p class="method-note">Retrieval practice means testing yourself with the list hidden: close your eyes or look away, try to recall every item purely from memory, then look back and check what you got right. Each click below simulates one full round of that — attempt, then check.</p>
+    <div class="hack-row">
+      <button class="hack-btn retrieve-btn" id="retrieveBtn">Recall it from memory, then check</button>
+    </div>
+
+    <div class="readouts">
+      <div class="readout"><div class="label">List A retention</div><div class="value reread-c" id="rereadVal">100%</div></div>
+      <div class="readout"><div class="label">List B retention</div><div class="value retrieve-c" id="retrieveVal">100%</div></div>
+      <div class="readout"><div class="label">Day</div><div class="value" id="dayVal">0</div></div>
+    </div>
+
+    <div class="graph-box">
+      <canvas id="graph" width="800" height="220"></canvas>
+    </div>
+    <div class="legend">
+      <span><span class="swatch" style="background:var(--reread);"></span>List A — reread</span>
+      <span><span class="swatch" style="background:var(--retrieve);"></span>List B — retrieved</span>
+    </div>
+    <div class="graph-caption">Click "Advance a day" to skip forward without studying and watch both lines decay at their own rate.</div>
+
+    <div class="feedback" id="feedback">Study each list a few times, then start advancing days.</div>
+
+    <div class="ctrl-row">
+      <button class="action" id="advanceBtn">Advance a day</button>
+      <button class="action" id="resetBtn">Reset session</button>
+    </div>
+  </div>
+
+  <div class="panel explain">
+    <h2>03 — THE CATCH</h2>
+    <p>Right after studying, List A usually looks just as strong as List B, or even stronger — rereading feels more confident because recognizing information feels like knowing it. The gap only shows up once time passes without any studying at all, which is exactly the situation real tests put you in.</p>
+    <div class="callout"><strong>Confidence and actual retention are different things.</strong> The study method that feels best in the moment (rereading) and the one that performs best days later (retrieval) are often not the same one — which is exactly why so many people default to the worse strategy without realizing it.</div>
+  </div>
+
+  <footer>Simulated data for teaching purposes — not a substitute for real study testing.</footer>
+</div>
+
+<script>
+(function(){
+  const canvas = document.getElementById('graph');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const padL = 30, padR = 12, padT = 12, padB = 20;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const yMin = 0, yMax = 100;
+  const MAX_DAY = 10;
+
+  const rereadBtn = document.getElementById('rereadBtn');
+  const retrieveBtn = document.getElementById('retrieveBtn');
+  const advanceBtn = document.getElementById('advanceBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const rereadVal = document.getElementById('rereadVal');
+  const retrieveVal = document.getElementById('retrieveVal');
+  const dayVal = document.getElementById('dayVal');
+  const feedback = document.getElementById('feedback');
+
+  // Each list tracked as a "memory strength" that determines decay rate.
+  // Rereading gives small strength bumps; retrieval gives larger ones (the effortful-retrieval boost).
+  let rereadStrength = 1;
+  let retrieveStrength = 1;
+  let day = 0;
+  let rereadHistory = [[0, 100]];
+  let retrieveHistory = [[0, 100]];
+
+  function retentionFromStrength(strength, elapsedDays){
+    // Simple exponential forgetting curve; higher strength = slower decay.
+    const decayRate = 0.55 / strength;
+    return 100 * Math.exp(-decayRate * elapsedDays);
+  }
+
+  function currentRetention(strength){
+    return retentionFromStrength(strength, day);
+  }
+
+  function xForDay(d){ return padL + (d / MAX_DAY) * plotW; }
+  function yForValue(v){ return padT + plotH - ((v - yMin) / (yMax - yMin)) * plotH; }
+
+  function drawGrid(){
+    ctx.clearRect(0,0,W,H);
+    ctx.font = '11px IBM Plex Mono, monospace';
+    ctx.fillStyle = '#63737B';
+    [0,50,100].forEach(v=>{
+      const y = yForValue(v);
+      ctx.strokeStyle = '#171F26';
+      ctx.beginPath();
+      ctx.moveTo(padL, y);
+      ctx.lineTo(W - padR, y);
+      ctx.stroke();
+      ctx.fillText(v, 4, y+4);
+    });
+    ctx.fillText('Day 0', padL, H - 4);
+    ctx.fillText('Day ' + MAX_DAY, W - padR - 40, H - 4);
+  }
+
+  function drawSeries(hist, color){
+    if(hist.length < 2) return;
+    ctx.beginPath();
+    ctx.moveTo(xForDay(hist[0][0]), yForValue(hist[0][1]));
+    for(let i=1;i<hist.length;i++){
+      ctx.lineTo(xForDay(hist[i][0]), yForValue(hist[i][1]));
+    }
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2.2;
+    ctx.stroke();
+    const last = hist[hist.length-1];
+    ctx.beginPath();
+    ctx.arc(xForDay(last[0]), yForValue(last[1]), 4, 0, Math.PI*2);
+    ctx.fillStyle = color;
+    ctx.fill();
+  }
+
+  function render(){
+    drawGrid();
+    drawSeries(rereadHistory, '#FB923C');
+    drawSeries(retrieveHistory, '#60A5FA');
+  }
+
+  function updateReadouts(){
+    const rr = currentRetention(rereadStrength);
+    const rv = currentRetention(retrieveStrength);
+    rereadVal.textContent = Math.round(rr) + '%';
+    retrieveVal.textContent = Math.round(rv) + '%';
+    dayVal.textContent = day;
+  }
+
+  rereadBtn.addEventListener('click', ()=>{
+    rereadStrength += 0.35;
+    rereadHistory[rereadHistory.length-1] = [day, currentRetention(rereadStrength)];
+    feedback.textContent = 'List A reread again — feels solid right now, but rereading builds strength slowly.';
+    render();
+    updateReadouts();
+  });
+
+  retrieveBtn.addEventListener('click', ()=>{
+    retrieveStrength += 0.9;
+    retrieveHistory[retrieveHistory.length-1] = [day, currentRetention(retrieveStrength)];
+    feedback.textContent = 'You recalled List B with it hidden, then checked — felt harder than rereading, but each attempt builds much more lasting strength.';
+    render();
+    updateReadouts();
+  });
+
+  advanceBtn.addEventListener('click', ()=>{
+    if(day >= MAX_DAY){
+      feedback.textContent = 'Reached day ' + MAX_DAY + '. Compare the two retention numbers above — that gap is the testing effect.';
+      return;
+    }
+    day += 1;
+    rereadHistory.push([day, currentRetention(rereadStrength)]);
+    retrieveHistory.push([day, currentRetention(retrieveStrength)]);
+    render();
+    updateReadouts();
+    if(day === MAX_DAY){
+      feedback.textContent = 'Day ' + MAX_DAY + ' reached. Without any studying since, notice which list held up better.';
+    } else {
+      feedback.textContent = 'A day passed with no studying. Both lists decayed — but not at the same rate.';
+    }
+  });
+
+  resetBtn.addEventListener('click', ()=>{
+    rereadStrength = 1;
+    retrieveStrength = 1;
+    day = 0;
+    rereadHistory = [[0, 100]];
+    retrieveHistory = [[0, 100]];
+    feedback.textContent = 'Session reset. Study each list a few times, then start advancing days.';
+    render();
+    updateReadouts();
+  });
+
+  render();
+  updateReadouts();
+})();
+</script>
+
+</body>
+</html>
