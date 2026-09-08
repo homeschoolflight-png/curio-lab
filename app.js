@@ -129,15 +129,6 @@ async function renderHome() {
     <button class="btn-primary" id="surprise-btn">
       <i class="ti ti-arrows-shuffle"></i> surprise me
     </button>
-
-    <a class="simulators-banner" href="#/simulators">
-      <i class="ti ti-flask-2"></i>
-      <div class="simulators-banner-text">
-        <p class="zone-title">curio lab simulators</p>
-        <p class="zone-desc">interactive simulators to poke at</p>
-      </div>
-      <i class="ti ti-chevron-right"></i>
-    </a>
   `;
 
   document.getElementById("surprise-btn").addEventListener("click", surpriseMe);
