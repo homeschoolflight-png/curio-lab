@@ -209,9 +209,47 @@
     color:var(--text-muted);
     text-align:center;
   }
+
+  /* curio lab shared header */
+  a.clab-header{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    text-decoration:none;
+    padding:8px 14px 8px 8px;
+    margin-bottom:20px;
+    border:1px solid var(--panel-line, #26323A);
+    border-radius:8px;
+    background:var(--panel, #161D22);
+    transition:border-color 0.2s ease, background 0.2s ease;
+  }
+  a.clab-header:hover{border-color:var(--text-primary, #E8EDF0);background:#1B242B;}
+  .clab-logo-badge{
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600;
+    font-size:0.78rem;
+    color:var(--bg-deep, #0F1417);
+    background:var(--text-primary, #E8EDF0);
+    width:26px;height:26px;
+    border-radius:6px;
+    display:flex;align-items:center;justify-content:center;
+    flex:0 0 auto;
+  }
+  .clab-site-name{
+    font-family:'IBM Plex Sans',sans-serif;
+    font-weight:600;
+    font-size:0.92rem;
+    color:var(--text-primary, #E8EDF0);
+    letter-spacing:-0.01em;
+  }
 </style>
 </head>
 <body>
+<a href="https://curio-lab.netlify.app/" class="clab-header" aria-label="Back to Curio Lab">
+  <span class="clab-logo-badge">CL</span>
+  <span class="clab-site-name">curio lab</span>
+</a>
+
 <div class="wrap" id="stage">
 
   <div class="console-header">
