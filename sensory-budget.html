@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Sensory Budget</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#0F1417;
+    --panel:#161D22;
+    --panel-line:#26323A;
+    --text-primary:#E8EDF0;
+    --text-muted:#8FA0A8;
+    --good:#2DD4BF;
+    --good-dim:#164A44;
+    --strain:#FB923C;
+    --strain-dim:#5A3B22;
+    --overload:#F87171;
+    --overload-dim:#5A2323;
+    --recover:#60A5FA;
+    --recover-dim:#1E3A5F;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg-deep);
+    color:var(--text-primary);
+    font-family:'IBM Plex Sans',sans-serif;
+    line-height:1.55;
+    padding:28px 16px 60px;
+  }
+  .wrap{max-width:800px;margin:0 auto;}
+
+  .console-header{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    border-bottom:1px solid var(--panel-line);
+    padding-bottom:14px;
+    margin-bottom:6px;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .console-header h1{font-size:1.5rem;margin:0;font-weight:700;letter-spacing:-0.01em;}
+  .console-header .tag{font-family:'IBM Plex Mono',monospace;font-size:0.72rem;color:var(--text-muted);}
+
+  .intro{color:var(--text-muted);font-size:0.98rem;max-width:66ch;margin:14px 0 28px;}
+  .intro strong{color:var(--text-primary);font-weight:600;}
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    border-radius:10px;
+    padding:22px;
+    margin-bottom:22px;
+  }
+  .panel h2{
+    font-size:0.78rem;
+    font-family:'IBM Plex Mono',monospace;
+    color:var(--text-muted);
+    margin:0 0 16px;
+    font-weight:500;
+    letter-spacing:0.02em;
+  }
+
+  .explain p{margin:0 0 12px;font-size:0.96rem;}
+  .explain p:last-child{margin-bottom:0;}
+  .callout{
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    border-left:3px solid var(--recover);
+    border-radius:6px;
+    padding:12px 14px;
+    font-size:0.9rem;
+    color:var(--text-muted);
+    margin-top:14px;
+  }
+  .callout strong{color:var(--text-primary);}
+
+  /* readouts */
+  .readouts{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+    gap:12px;
+    margin-bottom:18px;
+  }
+  .readout{
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    border-radius:8px;
+    padding:12px 14px;
+  }
+  .readout .label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.65rem;
+    color:var(--text-muted);
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+  }
+  .readout .value{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:1.3rem;
+    font-weight:600;
+    margin-top:4px;
+    color:var(--text-primary);
+    transition:color 0.3s ease;
+  }
+  .readout .value.good-c{color:var(--good);}
+  .readout .value.strain-c{color:var(--strain);}
+  .readout .value.overload-c{color:var(--overload);}
+
+  /* graph */
+  .graph-box{
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    border-radius:8px;
+    padding:10px;
+    margin-bottom:6px;
+  }
+  canvas{width:100%;height:auto;display:block;}
+  .graph-caption{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.65rem;
+    color:var(--text-muted);
+    margin-top:6px;
+  }
+
+  /* timeline / slots */
+  .timeline{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    padding-bottom:6px;
+    margin-bottom:18px;
+  }
+  .slot{
+    flex:0 0 110px;
+    background:#0C1013;
+    border:1px solid var(--panel-line);
+    border-radius:8px;
+    padding:10px 8px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    transition:border-color 0.3s ease;
+  }
+  .slot.active-now{border-color:var(--text-primary);}
+  .slot-time{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.62rem;
+    color:var(--text-muted);
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+  }
+  .slot-label{
+    font-size:0.78rem;
+    color:var(--text-primary);
+    line-height:1.3;
+    min-height:32px;
+  }
+  .slot-badge{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.68rem;
+    align-self:flex-start;
+    padding:2px 6px;
+    border-radius:4px;
+    border:1px solid var(--panel-line);
+    color:var(--text-muted);
+  }
+  .slot-badge.fixed{border-color:var(--strain-dim);color:var(--strain);}
+  .slot-badge.locked-tag{color:var(--text-muted);font-size:0.6rem;}
+
+  .slot.discretionary .slot-time::after{content:" \1F513";}
+
+  .choice-list{display:flex;flex-direction:column;gap:4px;}
+  .choice-btn{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.64rem;
+    background:transparent;
+    border:1px solid var(--panel-line);
+    color:var(--text-muted);
+    padding:5px 6px;
+    border-radius:5px;
+    cursor:pointer;
+    text-align:left;
+    transition:border-color 0.2s ease,color 0.2s ease;
+  }
+  .choice-btn:hover{border-color:var(--text-primary);color:var(--text-primary);}
+  .choice-btn.selected{border-color:var(--recover);color:var(--text-primary);background:rgba(96,165,250,0.08);}
+  .choice-btn.selected.is-demand{border-color:var(--overload);}
+
+  .ctrl-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:6px;}
+  button.action{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.78rem;
+    background:transparent;
+    border:1px solid var(--panel-line);
+    color:var(--text-primary);
+    padding:10px 16px;
+    border-radius:6px;
+    cursor:pointer;
+    transition:border-color 0.2s ease, opacity 0.2s ease;
+  }
+  button.action:hover:not(:disabled){border-color:var(--good);}
+  button.action:disabled{opacity:0.4;cursor:default;}
+
+  .feedback{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.78rem;
+    color:var(--text-muted);
+    min-height:38px;
+    margin-top:14px;
+    max-width:64ch;
+  }
+
+  footer{
+    margin-top:8px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.68rem;
+    color:var(--text-muted);
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+<div class="wrap" id="stage">
+
+  <div class="console-header">
+    <h1>The Sensory Budget</h1>
+    <span class="tag">capacity planning // hack zone experiment 06</span>
+  </div>
+
+  <p class="intro">
+    You usually can't control that a demanding day is coming, or how intense the person or situation is.
+    What you <strong>can</strong> control is what goes around it. This one's about managing the day before
+    it happens, not fixing a spike after it's already hit.
+  </p>
+
+  <div class="panel explain">
+    <h2>01 — WHAT YOU CAN AND CAN'T CONTROL</h2>
+    <p>Capacity isn't infinite, but it's also not a fixed number you're stuck with for the day. It's a running balance — demands draw it down, recovery fills it back up, and what matters most is the <strong>order</strong> things happen in, not just the total.</p>
+    <p>Some slots in the day below are locked — those are the things genuinely outside your control (someone else's needs, a scheduled commitment, an unavoidable interruption). A few are marked <strong>🔓 your call</strong> — that's where the actual leverage is. Build the day and see where it lands.</p>
+  </div>
+
+  <div class="panel">
+    <h2>02 — BUILD THE DAY</h2>
+
+    <div class="timeline" id="timeline"></div>
+
+    <div class="readouts">
+      <div class="readout"><div class="label">Capacity now</div><div class="value" id="capVal">90</div></div>
+      <div class="readout"><div class="label">Lowest point</div><div class="value" id="lowVal">—</div></div>
+      <div class="readout"><div class="label">End of day</div><div class="value" id="endVal">—</div></div>
+      <div class="readout"><div class="label">Status</div><div class="value" id="statusVal">Not run</div></div>
+    </div>
+
+    <div class="graph-box">
+      <canvas id="graph" width="800" height="200"></canvas>
+    </div>
+    <div class="graph-caption">Capacity across the day. The dashed line is the overload threshold.</div>
+
+    <div class="ctrl-row">
+      <button class="action" id="runBtn">Run the day</button>
+      <button class="action" id="resetBtn">Reset choices</button>
+    </div>
+    <div class="feedback" id="feedback">Pick what goes in each 🔓 slot, then run the day.</div>
+  </div>
+
+  <div class="panel explain">
+    <h2>03 — THE SCIENCE OF WHAT'S ACTUALLY CONTROLLABLE</h2>
+    <p>Feeling a sense of control over a stressor — even a small amount, even just over its timing — measurably reduces how stressful it registers as, independent of the stressor's actual intensity (this goes back to classic control research like Rodin &amp; Langer). That's not a mindset trick; it changes the physiological response.</p>
+    <p>This is also the difference between <strong>reactive coping</strong> (dealing with a spike after it hits — which is what the Reactivity Dial simulator is for) and <strong>proactive coping</strong> — arranging things ahead of time so fewer spikes happen, and the ones that do land on a fuller tank. Proactive coping doesn't remove the demanding person or situation. It just makes sure you're not meeting it already empty.</p>
+    <div class="callout"><strong>Notice: even a full recovery later in the day doesn't undo a deep dip earlier.</strong> If capacity drops far enough, real things can happen at that moment — snapping, shutting down, saying something you don't mean — regardless of how the day averages out. The lowest point matters as much as the ending number.</div>
+  </div>
+
+  <footer>Simulated data for teaching purposes — not medical or psychological advice.</footer>
+</div>
+
+<script>
+(function(){
+  const START_CAP = 90;
+  const OVERLOAD_LINE = 20;
+
+  const SLOTS = [
+    {time:'Morning', type:'fixed', label:'Get ready & commute', cost:8},
+    {time:'Mid-morning', type:'choice', options:[
+      {label:'Quiet alone time', delta: 18, kind:'recover'},
+      {label:'Spend time outside', delta: 14, kind:'recover'},
+      {label:'High-intensity gaming session', delta: -15, kind:'demand'},
+      {label:'Low-key downtime (shows, browsing)', delta: 4, kind:'recover'},
+    ]},
+    {time:'Midday', type:'fixed', label:'Group project / schoolwork', cost:14},
+    {time:'Early afternoon', type:'fixed', label:'Sibling stimming, needs high engagement', cost:32},
+    {time:'Afternoon', type:'choice', options:[
+      {label:'Quiet alone time', delta: 18, kind:'recover'},
+      {label:'Spend time outside', delta: 14, kind:'recover'},
+      {label:'High-intensity gaming session', delta: -15, kind:'demand'},
+      {label:'Low-key downtime (shows, browsing)', delta: 4, kind:'recover'},
+    ]},
+    {time:'Late afternoon', type:'fixed', label:'Errand + unexpected interruption', cost:18},
+    {time:'Evening', type:'choice', options:[
+      {label:'Quiet alone time', delta: 18, kind:'recover'},
+      {label:'Spend time outside', delta: 14, kind:'recover'},
+      {label:'High-intensity gaming session', delta: -15, kind:'demand'},
+      {label:'Low-key downtime (shows, browsing)', delta: 4, kind:'recover'},
+    ]},
+    {time:'Night', type:'fixed', label:'Wind down', cost:5},
+  ];
+
+  const selections = {}; // slotIndex -> option index, for choice slots
+
+  const timelineEl = document.getElementById('timeline');
+  const capVal = document.getElementById('capVal');
+  const lowVal = document.getElementById('lowVal');
+  const endVal = document.getElementById('endVal');
+  const statusVal = document.getElementById('statusVal');
+  const runBtn = document.getElementById('runBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const feedback = document.getElementById('feedback');
+
+  function buildTimeline(){
+    timelineEl.innerHTML = '';
+    SLOTS.forEach((slot, i) => {
+      const div = document.createElement('div');
+      div.className = 'slot' + (slot.type === 'choice' ? ' discretionary' : '');
+      div.id = 'slot-' + i;
+
+      const timeEl = document.createElement('div');
+      timeEl.className = 'slot-time';
+      timeEl.textContent = slot.time;
+      div.appendChild(timeEl);
+
+      if(slot.type === 'fixed'){
+        const label = document.createElement('div');
+        label.className = 'slot-label';
+        label.textContent = slot.label;
+        div.appendChild(label);
+        const badge = document.createElement('div');
+        badge.className = 'slot-badge fixed';
+        badge.textContent = '−' + slot.cost + ' fixed';
+        div.appendChild(badge);
+      } else {
+        const label = document.createElement('div');
+        label.className = 'slot-label';
+        label.textContent = 'Your call';
+        div.appendChild(label);
+        const list = document.createElement('div');
+        list.className = 'choice-list';
+        slot.options.forEach((opt, oi) => {
+          const b = document.createElement('button');
+          b.className = 'choice-btn';
+          b.textContent = (opt.delta > 0 ? '+' : '') + opt.delta + ' ' + opt.label;
+          b.addEventListener('click', () => {
+            selections[i] = oi;
+            renderSelections();
+          });
+          list.appendChild(b);
+        });
+        div.appendChild(list);
+      }
+      timelineEl.appendChild(div);
+    });
+    renderSelections();
+  }
+
+  function renderSelections(){
+    SLOTS.forEach((slot, i) => {
+      if(slot.type !== 'choice') return;
+      const div = document.getElementById('slot-' + i);
+      const btns = div.querySelectorAll('.choice-btn');
+      btns.forEach((b, oi) => {
+        const isSel = selections[i] === oi;
+        b.classList.toggle('selected', isSel);
+        b.classList.toggle('is-demand', isSel && slot.options[oi].kind === 'demand');
+      });
+    });
+  }
+
+  // ---- graph ----
+  const canvas = document.getElementById('graph');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const padL = 30, padR = 14, padT = 14, padB = 24;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const yMin = 0, yMax = 100;
+
+  function xForIndex(i){ return padL + (i/(SLOTS.length)) * plotW; }
+  function yForValue(v){ return padT + plotH - ((v-yMin)/(yMax-yMin)) * plotH; }
+
+  function drawGrid(){
+    ctx.clearRect(0,0,W,H);
+    ctx.font = '11px IBM Plex Mono, monospace';
+    ctx.fillStyle = '#63737B';
+    [0,50,100].forEach(v=>{
+      const y = yForValue(v);
+      ctx.strokeStyle = '#171F26';
+      ctx.beginPath();
+      ctx.moveTo(padL,y); ctx.lineTo(W-padR,y); ctx.stroke();
+      ctx.fillText(v, 4, y+4);
+    });
+    const oy = yForValue(OVERLOAD_LINE);
+    ctx.strokeStyle = 'rgba(248,113,113,0.5)';
+    ctx.setLineDash([4,3]);
+    ctx.beginPath();
+    ctx.moveTo(padL, oy); ctx.lineTo(W-padR, oy); ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = '#63737B';
+    SLOTS.forEach((s,i)=>{
+      const x = xForIndex(i) + (plotW/SLOTS.length)/2;
+      ctx.save();
+      ctx.translate(x, H-6);
+      ctx.font = '9px IBM Plex Mono, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(s.time.split(' ')[0], 0, 0);
+      ctx.restore();
+    });
+  }
+
+  function drawStep(points){
+    if(points.length < 2) return;
+    ctx.beginPath();
+    ctx.moveTo(xForIndex(0), yForValue(points[0]));
+    for(let i=1;i<points.length;i++){
+      const xPrev = xForIndex(i-1) + (plotW/SLOTS.length);
+      ctx.lineTo(xPrev, yForValue(points[i-1]));
+      ctx.lineTo(xPrev, yForValue(points[i]));
+    }
+    const lastX = xForIndex(points.length-1) + (plotW/SLOTS.length);
+    ctx.lineTo(lastX, yForValue(points[points.length-1]));
+    const minV = Math.min(...points);
+    const lineColor = minV < OVERLOAD_LINE ? '#F87171' : (minV < 40 ? '#FB923C' : '#2DD4BF');
+    ctx.strokeStyle = lineColor;
+    ctx.lineWidth = 2.4;
+    ctx.stroke();
+
+    points.forEach((v,i)=>{
+      const x = xForIndex(i) + (plotW/SLOTS.length)/2;
+      ctx.beginPath();
+      ctx.arc(x, yForValue(v), 3.5, 0, Math.PI*2);
+      ctx.fillStyle = lineColor;
+      ctx.fill();
+    });
+  }
+
+  function render(points){
+    drawGrid();
+    if(points && points.length) drawStep(points);
+  }
+
+  function computeSeries(){
+    let cap = START_CAP;
+    const points = [];
+    SLOTS.forEach((slot,i)=>{
+      if(slot.type === 'fixed'){
+        cap -= slot.cost;
+      } else {
+        const oi = selections[i];
+        if(oi !== undefined){
+          cap += slot.options[oi].delta;
+        }
+      }
+      cap = Math.max(0, Math.min(100, cap));
+      points.push(cap);
+    });
+    return points;
+  }
+
+  let running = false;
+
+  function runDay(){
+    if(running) return;
+    const allChosen = SLOTS.every((s,i)=> s.type==='fixed' || selections[i] !== undefined);
+    if(!allChosen){
+      feedback.textContent = 'Pick something for every 🔓 slot first.';
+      return;
+    }
+    running = true;
+    runBtn.disabled = true;
+    const series = computeSeries();
+    let step = 0;
+    const shown = [];
+    function advance(){
+      shown.push(series[step]);
+      render(shown);
+      const cap = series[step];
+      capVal.textContent = Math.round(cap);
+      capVal.className = 'value ' + (cap < OVERLOAD_LINE ? 'overload-c' : (cap < 40 ? 'strain-c' : 'good-c'));
+      document.querySelectorAll('.slot').forEach(el=>el.classList.remove('active-now'));
+      const slotEl = document.getElementById('slot-'+step);
+      if(slotEl) slotEl.classList.add('active-now');
+
+      step++;
+      if(step < series.length){
+        setTimeout(advance, 550);
+      } else {
+        finishRun(series);
+      }
+    }
+    advance();
+  }
+
+  function finishRun(series){
+    running = false;
+    runBtn.disabled = false;
+    document.querySelectorAll('.slot').forEach(el=>el.classList.remove('active-now'));
+    const low = Math.min(...series);
+    const end = series[series.length-1];
+    lowVal.textContent = Math.round(low);
+    lowVal.className = 'value ' + (low < OVERLOAD_LINE ? 'overload-c' : (low < 40 ? 'strain-c' : 'good-c'));
+    endVal.textContent = Math.round(end);
+    endVal.className = 'value ' + (end < OVERLOAD_LINE ? 'overload-c' : (end < 40 ? 'strain-c' : 'good-c'));
+
+    let status, msg;
+    if(low < OVERLOAD_LINE){
+      status = 'Overloaded';
+      statusVal.className = 'value overload-c';
+      msg = 'Capacity dropped below the overload line at some point — even though it recovered after, that dip is where real reactions happen. Try moving a recovery slot earlier, right before the biggest demand instead of after it.';
+    } else if(low < 40){
+      status = 'Strained';
+      statusVal.className = 'value strain-c';
+      msg = 'You stayed above overload, but it was close. Notice where the dip happened relative to your recovery choices.';
+    } else {
+      status = 'Comfortable';
+      statusVal.className = 'value good-c';
+      msg = "Capacity never got dangerously low. That's the version of the day where the demands didn't change, but the spacing around them did.";
+    }
+    statusVal.textContent = status;
+    feedback.textContent = msg;
+  }
+
+  runBtn.addEventListener('click', runDay);
+  resetBtn.addEventListener('click', ()=>{
+    for(const k in selections) delete selections[k];
+    renderSelections();
+    capVal.textContent = START_CAP;
+    capVal.className = 'value good-c';
+    lowVal.textContent = '—'; lowVal.className = 'value';
+    endVal.textContent = '—'; endVal.className = 'value';
+    statusVal.textContent = 'Not run'; statusVal.className = 'value';
+    feedback.textContent = 'Pick what goes in each 🔓 slot, then run the day.';
+    render([]);
+  });
+
+  buildTimeline();
+  render([]);
+})();
+</script>
+
+</body>
+</html>
